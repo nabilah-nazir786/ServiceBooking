@@ -1,0 +1,342 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | Cousins Car Care</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+    <!-- Ambient Glowing Background Orbs -->
+    <div class="bg-ambient">
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-3"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="{% url 'bookingService:home' %}" class="logo">
+            <img src="{% static 'logo.svg' %}" alt="Cousins Car Care Logo" class="logo-brand-img">
+        </a>
+        <div class="nav-actions">
+            <a href="{% url 'bookingService:home' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="{% url 'bookingService:login' %}" class="btn btn-outline btn-sm"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <h2>Create Account</h2>
+                    <p>Join Cousins Car Care to book appointments & track your vehicle</p>
+                </div>
+
+                <form method="POST" class="auth-form" id="register-form">
+                    {% csrf_token %}
+                    
+                    <div id="form-error-box" class="alert-box" style="display: none; background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #fecdd3; margin-bottom: 1.2rem;">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #f43f5e;"></i>
+                        <span id="form-error-text"></span>
+                    </div>
+
+                    {% if error %}
+                        <div class="alert-box">
+                            <i class="fa-solid fa-triangle-exclamation" style="color: #f43f5e;"></i>
+                            <span>{{ error }}</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="id_full_name">Full Name (Letters Only)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user input-icon"></i>
+                            <input type="text" name="full_name" class="form-input" autofocus autocomplete="name" required id="id_full_name" placeholder="Enter your full name (letters only)" value="{{ full_name|default:'' }}">
+                        </div>
+                        <div id="name-error-msg" style="display: none; font-size: 0.78rem; color: #ef4444; font-weight: 600; margin-top: 0.3rem;">
+                            <i class="fa-solid fa-circle-xmark"></i> Full name must contain only letters and spaces.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_phone_number">Phone Number (10 Digits)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-phone input-icon"></i>
+                            <input type="tel" name="phone_number" class="form-input" autocomplete="tel" maxlength="10" required id="id_phone_number" placeholder="Enter 10-digit phone number" value="{{ phone_number|default:'' }}">
+                        </div>
+                        <div id="phone-error-msg" style="display: none; font-size: 0.78rem; color: #ef4444; font-weight: 600; margin-top: 0.3rem;">
+                            <i class="fa-solid fa-circle-xmark"></i> Phone number must be exactly 10 digits.
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_email">Email Address</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <input type="email" name="email" class="form-input" autocomplete="email" required id="id_email" placeholder="name@example.com" value="{{ email|default:'' }}">
+                        </div>
+                        <div id="email-error-msg" style="display: none; font-size: 0.78rem; color: #ef4444; font-weight: 600; margin-top: 0.3rem;">
+                            <i class="fa-solid fa-circle-xmark"></i> Please enter a valid email address.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_password">Password</label>
+                        <div class="input-wrapper" style="position: relative;">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" name="password" class="form-input" autocomplete="new-password" required id="id_password" placeholder="Create a password" style="padding-right: 2.8rem;">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('id_password', this)" title="Show/Hide Password" aria-label="Toggle password visibility">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-rules-box" style="margin-top: 0.6rem; font-size: 0.78rem; background: rgba(0,0,0,0.25); border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.6rem 0.8rem;">
+                            <div style="font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem;">Password requirements:</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem;" id="reg-pwd-rules">
+                                <span id="reg-rule-length" style="color: #ef4444; transition: color 0.2s;"><i class="fa-solid fa-xmark"></i> 8+ Characters</span>
+                                <span id="reg-rule-upper" style="color: #ef4444; transition: color 0.2s;"><i class="fa-solid fa-xmark"></i> Uppercase (A-Z)</span>
+                                <span id="reg-rule-number" style="color: #ef4444; transition: color 0.2s;"><i class="fa-solid fa-xmark"></i> Number (0-9)</span>
+                                <span id="reg-rule-special" style="color: #ef4444; transition: color 0.2s;"><i class="fa-solid fa-xmark"></i> Special Char</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_confirm_password">Confirm Password</label>
+                        <div class="input-wrapper" style="position: relative;">
+                            <i class="fa-solid fa-key input-icon"></i>
+                            <input type="password" name="confirm_password" class="form-input" autocomplete="new-password" required id="id_confirm_password" placeholder="Confirm your password" style="padding-right: 2.8rem;">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('id_confirm_password', this)" title="Show/Hide Password" aria-label="Toggle confirm password visibility">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                        <div id="reg-confirm-match-msg" style="display: none; font-size: 0.78rem; font-weight: 600; margin-top: 0.4rem;"></div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-lg" style="width: 100%; margin-top: 1rem;">
+                        <i class="fa-solid fa-user-check"></i> Register Now
+                    </button>
+
+                    <div class="auth-footer">
+                        Already have an account? <a href="{% url 'bookingService:login' %}">Sign In Here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePasswordVisibility(inputId, btnElem) {
+            var input = document.getElementById(inputId);
+            var icon = btnElem ? btnElem.querySelector('i') : null;
+            if (!input) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                    icon.style.color = 'var(--primary-cyan)';
+                }
+            } else {
+                input.type = 'password';
+                if (icon) {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                    icon.style.color = '';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var form = document.getElementById('register-form');
+            var nameInput = document.getElementById('id_full_name');
+            var phoneInput = document.getElementById('id_phone_number');
+            var emailInput = document.getElementById('id_email');
+            var pwdInput = document.getElementById('id_password');
+            var confirmInput = document.getElementById('id_confirm_password');
+            var matchMsg = document.getElementById('reg-confirm-match-msg');
+
+            var nameErr = document.getElementById('name-error-msg');
+            var phoneErr = document.getElementById('phone-error-msg');
+            var emailErr = document.getElementById('email-error-msg');
+            var formErrBox = document.getElementById('form-error-box');
+            var formErrText = document.getElementById('form-error-text');
+
+            function showErrorMsg(msg) {
+                if (formErrBox && formErrText) {
+                    formErrText.textContent = msg;
+                    formErrBox.style.display = 'flex';
+                }
+            }
+
+            function clearErrorMsg() {
+                if (formErrBox) {
+                    formErrBox.style.display = 'none';
+                }
+            }
+
+            // 1. Name Validation (Letters & spaces only)
+            if (nameInput) {
+                nameInput.addEventListener('input', function() {
+                    // Filter non-letter and non-space characters
+                    var filtered = this.value.replace(/[^a-zA-Z\s]/g, '');
+                    if (this.value !== filtered) {
+                        this.value = filtered;
+                        if (nameErr) nameErr.style.display = 'block';
+                    } else if (nameErr) {
+                        nameErr.style.display = 'none';
+                    }
+                });
+            }
+
+            // 2. Phone Validation (Numbers only, exactly 10 digits)
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function() {
+                    var filtered = this.value.replace(/\D/g, '');
+                    if (this.value !== filtered) {
+                        this.value = filtered;
+                    }
+                    if (this.value.length > 0 && this.value.length !== 10) {
+                        if (phoneErr) phoneErr.style.display = 'block';
+                    } else if (phoneErr) {
+                        phoneErr.style.display = 'none';
+                    }
+                });
+            }
+
+            // 3. Email Validation
+            function isValidEmail(val) {
+                return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val);
+            }
+
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    if (this.value.length > 0 && !isValidEmail(this.value)) {
+                        if (emailErr) emailErr.style.display = 'block';
+                    } else if (emailErr) {
+                        emailErr.style.display = 'none';
+                    }
+                });
+            }
+
+            // 4. Password Strength
+            function checkRules(val) {
+                var isLength = val.length >= 8;
+                var isUpper = /[A-Z]/.test(val);
+                var isNumber = /[0-9]/.test(val);
+                var isSpecial = /[^a-zA-Z0-9]/.test(val);
+
+                updateRule('reg-rule-length', isLength, '8+ Characters');
+                updateRule('reg-rule-upper', isUpper, 'Uppercase (A-Z)');
+                updateRule('reg-rule-number', isNumber, 'Number (0-9)');
+                updateRule('reg-rule-special', isSpecial, 'Special Char');
+
+                return isLength && isUpper && isNumber && isSpecial;
+            }
+
+            function updateRule(elementId, isValid, label) {
+                var el = document.getElementById(elementId);
+                if (!el) return;
+                if (isValid) {
+                    el.style.color = '#10b981';
+                    el.innerHTML = '<i class="fa-solid fa-check"></i> ' + label;
+                } else {
+                    el.style.color = '#ef4444';
+                    el.innerHTML = '<i class="fa-solid fa-xmark"></i> ' + label;
+                }
+            }
+
+            // 5. Confirm Password Match
+            function checkConfirmMatch() {
+                if (!confirmInput || !matchMsg) return true;
+                var pVal = pwdInput ? pwdInput.value : '';
+                var cVal = confirmInput.value;
+
+                if (!cVal) {
+                    matchMsg.style.display = 'none';
+                    return true;
+                }
+
+                if (pVal === cVal) {
+                    matchMsg.style.display = 'block';
+                    matchMsg.style.color = '#10b981';
+                    matchMsg.innerHTML = '<i class="fa-solid fa-check"></i> Passwords match';
+                    return true;
+                } else {
+                    matchMsg.style.display = 'block';
+                    matchMsg.style.color = '#ef4444';
+                    matchMsg.innerHTML = '<i class="fa-solid fa-xmark"></i> Passwords do not match';
+                    return false;
+                }
+            }
+
+            if (pwdInput) {
+                pwdInput.addEventListener('input', function() {
+                    checkRules(this.value);
+                    checkConfirmMatch();
+                });
+            }
+
+            if (confirmInput) {
+                confirmInput.addEventListener('input', checkConfirmMatch);
+            }
+
+            // 6. On Submit Validation (NO ALERT POPUPS!)
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    clearErrorMsg();
+
+                    var nameVal = nameInput ? nameInput.value.trim() : '';
+                    var phoneVal = phoneInput ? phoneInput.value.trim() : '';
+                    var emailVal = emailInput ? emailInput.value.trim() : '';
+                    var pwdVal = pwdInput ? pwdInput.value : '';
+
+                    if (!/^[a-zA-Z\s]+$/.test(nameVal)) {
+                        e.preventDefault();
+                        if (nameErr) nameErr.style.display = 'block';
+                        showErrorMsg('Full name must contain only letters and spaces.');
+                        return false;
+                    }
+
+                    if (!/^\d{10}$/.test(phoneVal)) {
+                        e.preventDefault();
+                        if (phoneErr) phoneErr.style.display = 'block';
+                        showErrorMsg('Phone number must be exactly 10 digits.');
+                        return false;
+                    }
+
+                    if (!isValidEmail(emailVal)) {
+                        e.preventDefault();
+                        if (emailErr) emailErr.style.display = 'block';
+                        showErrorMsg('Please enter a valid email address.');
+                        return false;
+                    }
+
+                    var isStrong = checkRules(pwdVal);
+                    if (!isStrong) {
+                        e.preventDefault();
+                        showErrorMsg('Password must be at least 8 characters long and contain an uppercase letter, a number, and a special character.');
+                        return false;
+                    }
+
+                    var isMatch = checkConfirmMatch();
+                    if (!isMatch) {
+                        e.preventDefault();
+                        showErrorMsg('Passwords do not match. Please ensure Password and Confirm Password match.');
+                        return false;
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

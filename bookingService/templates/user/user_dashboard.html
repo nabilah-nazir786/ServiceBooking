@@ -1,0 +1,1935 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard | Cousins Car Care</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+        .booking-form-responsive {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+        .service-option-card, .payment-radio-card {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .service-option-card:hover, .payment-radio-card:hover {
+            border-color: rgba(245, 158, 11, 0.5) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+        }
+        @media (max-width: 768px) {
+            .booking-form-responsive {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+            }
+            .booking-form-responsive .form-group,
+            .booking-form-responsive .form-full-width {
+                grid-column: span 1 !important;
+            }
+            .form-actions-wrapper {
+                flex-direction: column-reverse !important;
+                width: 100% !important;
+            }
+            .form-actions-wrapper button {
+                width: 100% !important;
+                justify-content: center;
+            }
+            .total-amount-box {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 0.6rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Glowing Background Orbs -->
+    <div class="bg-ambient">
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-3"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="{% url 'bookingService:home' %}" class="logo">
+            <img src="{% static 'logo.svg' %}" alt="Cousins Car Care Logo" class="logo-brand-img">
+        </a>
+        <div class="nav-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+            <a href="{% url 'bookingService:home' %}" class="btn btn-secondary btn-sm nav-home-btn" style="display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none;">
+                <i class="fa-solid fa-house"></i> <span>Home</span>
+            </a>
+            <!-- User Profile Dropdown Button -->
+            <div class="profile-dropdown-container">
+                <button type="button" class="user-profile-btn" onclick="toggleProfileDropdown(event)" aria-haspopup="true" aria-expanded="false">
+                    <div class="profile-avatar-icon">
+                        <i class="fa-solid fa-circle-user"></i>
+                    </div>
+                    <span class="user-name-text">{{ user.full_name|default:user.username }}</span>
+                    <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+                </button>
+
+                <div class="profile-dropdown-menu" id="profileDropdownMenu">
+                    <div class="profile-dropdown-header">
+                        <strong style="color: var(--text-primary); font-size: 0.95rem; display: block;">{{ user.full_name|default:user.username }}</strong>
+                        <span style="color: var(--text-muted); font-size: 0.8rem;">{{ user.email }}</span>
+                    </div>
+                    <button type="button" class="profile-dropdown-item" onclick="openEditProfileModal()">
+                        <i class="fa-solid fa-user-pen" style="color: var(--primary-cyan);"></i> Edit Profile
+                    </button>
+                    <button type="button" class="profile-dropdown-item" onclick="openChangePasswordModal()">
+                        <i class="fa-solid fa-key" style="color: var(--primary-yellow);"></i> Change Password
+                    </button>
+                    <div style="border-top: 1px solid var(--surface-border); margin: 0.3rem 0;"></div>
+                    <a href="{% url 'bookingService:logout' %}" class="profile-dropdown-item danger" onclick="confirmLogout(event, this.href);">
+                        <i class="fa-solid fa-right-from-bracket" style="color: #f43f5e;"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="dashboard-wrapper">
+
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <div class="alert-box" style="background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #fecdd3; margin-bottom: 1.5rem;">
+                            <i class="fa-solid fa-triangle-exclamation" style="color: #f43f5e;"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% elif message.tags == 'warning' %}
+                        <div class="alert-box" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); color: #fef08a; margin-bottom: 1.5rem;">
+                            <i class="fa-solid fa-circle-exclamation" style="color: #f59e0b;"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% else %}
+                        <div class="alert-box" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #a7f3d0; margin-bottom: 1.5rem;">
+                            <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <!-- Header Card -->
+            <div class="dash-header-card">
+                <div class="dash-user-info">
+                    <div class="avatar-box">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <div class="dash-user-details">
+                        <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.2rem;">
+                            <h1>Hello, <span>{{ user.full_name|default:user.username }}</span></h1>
+                            <span class="role-badge user"><i class="fa-solid fa-shield"></i> {{ user.role }}</span>
+                        </div>
+                        <p>Welcome to your personal car care portal. View active bookings, reserve service slots, and track detailing progress.</p>
+                    </div>
+                </div>
+                <div class="dash-actions" style="display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center;">
+                    <button class="btn btn-secondary btn-sm" id="toggle-history-btn" onclick="toggleBookingHistory()"><i class="fa-solid fa-clock-rotate-left"></i> Booking History ({{ user_bookings_count|default:0 }})</button>
+                    <button class="btn btn-sm" id="toggle-booking-form-btn" onclick="toggleBookingPanel()"><i class="fa-solid fa-calendar-plus"></i> Book New Service</button>
+                </div>
+            </div>
+
+            <!-- Booking Form Panel (Collapsible) -->
+            <div id="booking-panel" class="panel-card" style="display: none; margin-bottom: 2rem;">
+                <div class="panel-header" style="border-bottom: 1px solid var(--border-light); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                    <div class="panel-title" style="font-size: 1.3rem;"><i class="fa-solid fa-car-wash" style="color: var(--primary-cyan);"></i> Reserve Detailing & Service Appointment</div>
+                </div>
+
+                <form method="POST" action="{% url 'bookingService:create_booking' %}" enctype="multipart/form-data" class="booking-form-responsive" id="main-booking-form" onsubmit="return validateBookingForm(event)">
+                    {% csrf_token %}
+
+                    <!-- Read-only Customer Name -->
+                    <div class="form-group">
+                        <label>Customer Name (Read-Only)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user input-icon"></i>
+                            <input type="text" class="form-input" value="{{ user.full_name|default:user.username }}" readonly style="background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); cursor: not-allowed;">
+                        </div>
+                    </div>
+
+                    <!-- Read-only Phone Number -->
+                    <div class="form-group">
+                        <label>Phone Number (Read-Only)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-phone input-icon"></i>
+                            <input type="text" class="form-input" value="{{ user.phone_number|default:'Not provided' }}" readonly style="background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); cursor: not-allowed;">
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Number -->
+                    <div class="form-group">
+                        <label>Vehicle Number *</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-closed-captioning input-icon"></i>
+                            <input type="text" name="vehicle_number" placeholder="e.g. KL-07-AB-1234" class="form-input" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()" required>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Model -->
+                    <div class="form-group">
+                        <label>Vehicle Model *</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-car input-icon"></i>
+                            <input type="text" name="vehicle_model" placeholder="e.g. Hyundai Creta 2024" class="form-input" required>
+                        </div>
+                    </div>
+
+                    {% if announcements %}
+                        <!-- Active Promotional Offer Callout Banner -->
+                        <div class="form-group form-full-width" style="grid-column: span 2; margin-bottom: 0.5rem;">
+                            {% for a in announcements %}
+                                <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(18, 22, 28, 0.85)); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 12px; padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.8rem; box-shadow: 0 4px 16px rgba(0,0,0,0.25);">
+                                    <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                        <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(245, 158, 11, 0.2); color: #fbbf24; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                                            <i class="fa-solid fa-bullhorn"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.75rem; font-weight: 700; color: #fbbf24; text-transform: uppercase;">Active Offer & Announcement</div>
+                                            <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">{{ a.title }}</div>
+                                            <div style="font-size: 0.82rem; color: var(--text-secondary);">{{ a.description }}</div>
+                                        </div>
+                                    </div>
+                                    <span class="badge" style="background: rgba(0, 242, 254, 0.12); color: var(--primary-cyan); border: 1px solid rgba(0, 242, 254, 0.3); font-weight: 700; padding: 3px 10px; border-radius: 16px; font-size: 0.78rem;">
+                                        Valid: {{ a.start_date|date:"M d" }} - {{ a.end_date|date:"M d, Y" }}
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Service Selection (Checkboxes) -->
+                    <div class="form-group form-full-width" style="grid-column: span 2;">
+                        <label style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-list-check" style="color: var(--primary-gold);"></i> Select Service Package(s) *
+                        </label>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                            {% for service in services %}
+                                <label class="service-option-card" style="display: flex; align-items: center; gap: 0.8rem; padding: 0.9rem 1.1rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-light); border-radius: 12px; cursor: pointer; transition: all 0.25s ease;">
+                                    <input type="checkbox" name="services" value="{{ service.id }}" data-price="{{ service.base_price }}" onchange="updateBookingTotal(); toggleServiceCardStyle(this)" style="width: 18px; height: 18px; accent-color: #f59e0b;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 700; color: var(--text-primary); font-size: 0.92rem;">{{ service.name }}</div>
+                                        <div style="font-size: 0.85rem; color: #fbbf24; font-weight: 700; margin-top: 0.15rem;">₹{{ service.base_price }}</div>
+                                    </div>
+                                </label>
+                            {% empty %}
+                                <p style="color: var(--text-muted);">No active services available at the moment.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Booking Date -->
+                    <div class="form-group">
+                        <label>Booking Date *</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-calendar-day input-icon"></i>
+                            <input type="date" name="booking_date" id="user-booking-date" class="form-input" min="{{ today_date }}" onchange="fetchSlotsForSelectedDate(this, 'user-slot-select', 'user-date-status-msg')" required>
+                        </div>
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.3rem;">Select date to fetch matching time slots or holiday status.</small>
+                    </div>
+
+                    <!-- Time Slot Selection -->
+                    <div class="form-group">
+                        <label>Select Preferred Time Slot *</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-clock input-icon"></i>
+                            <select name="time_slot_id" id="user-slot-select" class="form-input" style="background: rgba(22, 18, 20, 0.85); color: var(--text-primary);" required disabled onchange="updateSlotCapacityInfo(this, 'user-slot-capacity-info')">
+                                <option value="">-- Please select a booking date first --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Date Status / Holiday Notice Box (Spans 2 columns) -->
+                    <div id="user-date-status-msg" class="form-full-width" style="grid-column: span 2; display: none; margin-top: -0.5rem; margin-bottom: 0.5rem;"></div>
+
+                    <!-- Special Instructions -->
+                    <div class="form-group form-full-width" style="grid-column: span 2;">
+                        <label>Special Instructions / Custom Notes</label>
+                        <textarea name="special_instructions" class="form-input" rows="3" placeholder="Mention any specific scratches, interior cleaning focus, or special requests..." style="padding-left: 1rem;"></textarea>
+                    </div>
+
+                    <!-- Payment Option Selection -->
+                    <div class="form-group form-full-width" style="grid-column: span 2;">
+                        <label style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-wallet" style="color: var(--primary-cyan);"></i> Payment Option *
+                        </label>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem;">
+                            <label class="payment-radio-card" style="display: flex; align-items: center; gap: 0.8rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-light); padding: 0.9rem 1.1rem; border-radius: 12px; cursor: pointer; transition: all 0.25s ease;">
+                                <input type="radio" name="payment_option" value="PAY_NOW" onchange="togglePaymentCardStyle()" style="width: 18px; height: 18px; accent-color: #f59e0b;">
+                                <div>
+                                    <strong style="color: var(--text-primary); display: block; font-size: 0.92rem;"><i class="fa-solid fa-bolt" style="color: #facc15; margin-right: 0.4rem;"></i> Pay Now</strong>
+                                    <span style="font-size: 0.78rem; color: var(--text-muted);">Secure Online Payment via UPI QR</span>
+                                </div>
+                            </label>
+                            <label class="payment-radio-card" style="display: flex; align-items: center; gap: 0.8rem; background: rgba(245, 158, 11, 0.12); border: 1px solid #f59e0b; padding: 0.9rem 1.1rem; border-radius: 12px; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);">
+                                <input type="radio" name="payment_option" value="PAY_AFTER" checked onchange="togglePaymentCardStyle()" style="width: 18px; height: 18px; accent-color: #f59e0b;">
+                                <div>
+                                    <strong style="color: var(--text-primary); display: block; font-size: 0.92rem;"><i class="fa-solid fa-hand-holding-dollar" style="color: #fbbf24; margin-right: 0.4rem;"></i> Pay After Service</strong>
+                                    <span style="font-size: 0.78rem; color: var(--text-muted);">Pay at workshop after inspection</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Inline Dynamic Pay Now UPI QR Code Container -->
+                    <div id="booking-pay-now-qr-box" class="form-full-width" style="grid-column: span 2; display: none; background: rgba(18, 22, 28, 0.95); border: 1px solid rgba(0, 242, 254, 0.4); padding: 1.25rem; border-radius: 14px; margin-top: 0.2rem; margin-bottom: 0.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+                        <div style="font-weight: 700; color: var(--primary-cyan); font-size: 1.05rem; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                            <span><i class="fa-solid fa-qrcode" style="color: #facc15; margin-right: 0.4rem;"></i> Scan UPI QR Code to Pay Service Amount</span>
+                            <span class="badge" style="background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 0.88rem; font-weight: 800; padding: 4px 12px; border-radius: 20px;">
+                                Total Amount: ₹<span id="qr-display-amount">0.00</span>
+                            </span>
+                        </div>
+
+                        <!-- QR Code & Store Info Grid -->
+                        <div style="display: grid; grid-template-columns: auto 1fr; gap: 1.2rem; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); padding: 1.2rem; border-radius: 12px; margin-bottom: 1.2rem;">
+                            <div style="text-align: center; background: #ffffff; padding: 10px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); flex-shrink: 0;">
+                                <img id="booking-form-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=0740020A0055730@paytm&pn=COUSINS%20CAR%20CARE&am=0.00&cu=INR" alt="UPI QR Code" style="width: 170px; height: 170px; display: block; object-fit: contain;">
+                            </div>
+                            <div>
+                                <div style="font-weight: 800; color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.2rem;">COUSINS CAR CARE</div>
+                                <div style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+                                    Merchant UPI ID: <strong style="color: #fbbf24; font-family: monospace; font-size: 0.95rem;">0740020A0055730</strong>
+                                </div>
+                                <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 0.9rem;">
+                                    Scan QR code using Google Pay, PhonePe, Paytm, or BHIM UPI app to complete payment.
+                                </p>
+                                <a id="booking-form-upi-link" href="upi://pay?pa=0740020A0055730@paytm&pn=COUSINS%20CAR%20CARE&am=0.00&cu=INR" class="btn btn-sm" style="background: #10b981; color: #fff; font-weight: 700; text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
+                                    <i class="fa-solid fa-mobile-screen-button"></i> Open UPI App to Pay
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Verification Input Fields -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; text-align: left;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; display: block;">Transaction ID / UTR Ref Number *</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-receipt input-icon"></i>
+                                    <input type="text" name="transaction_id" id="form-pay-txnid" class="form-input" placeholder="e.g. 426801928475" maxlength="12" pattern="\d{12}" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 12)" style="text-transform: uppercase;">
+                                </div>
+                                <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.25rem;">Enter the 12-digit UTR from your payment app.</small>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; display: block;">Upload Payment Screenshot *</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-image input-icon"></i>
+                                    <input type="file" name="payment_screenshot" id="form-pay-screenshot" accept="image/*" class="form-input" style="padding-top: 0.5rem;" onchange="previewFormPayScreenshot(this)">
+                                </div>
+                                <div id="form-pay-preview-box" style="display: none; margin-top: 0.5rem; text-align: center;">
+                                    <img id="form-pay-preview-img" src="" alt="Screenshot Preview" style="max-height: 100px; max-width: 100%; border-radius: 8px; border: 1px solid var(--primary-cyan);">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Amount Display -->
+                    <div class="form-full-width total-amount-box" style="grid-column: span 2; background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%); border: 1px solid rgba(245, 158, 11, 0.3); padding: 1.2rem 1.5rem; border-radius: 14px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">Estimated Total Base Price</div>
+                            <small style="color: var(--text-muted); font-size: 0.78rem;">*(Base price may change according to actual vehicle condition & additional work)</small>
+                        </div>
+                        <div style="font-size: 1.8rem; font-weight: 900; color: #fbbf24; font-family: var(--font-heading); text-shadow: 0 0 15px rgba(245, 158, 11, 0.3);">
+                            ₹<span id="calculated-total">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Submit Actions -->
+                    <div class="form-full-width form-actions-wrapper" style="grid-column: span 2; display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.5rem;">
+                        <button type="button" class="btn btn-secondary" onclick="toggleBookingPanel()"><i class="fa-solid fa-xmark"></i> Cancel</button>
+                        <button type="submit" class="btn" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #000; font-weight: 700; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); border: none;"><i class="fa-solid fa-calendar-check"></i> Confirm & Book Appointment</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- KPI Cards Grid -->
+            <div class="kpi-grid" style="margin-bottom: 2rem;">
+                <div class="kpi-card" onclick="toggleBookingHistory()" style="cursor: pointer;" title="Click to view Booking History">
+                    <div class="kpi-top">
+                        <div class="kpi-icon cyan"><i class="fa-solid fa-calendar-day"></i></div>
+                        <span class="kpi-trend up"><i class="fa-solid fa-clock-rotate-left"></i> History</span>
+                    </div>
+                    <div class="kpi-value">{{ user_bookings_count|default:0 }}</div>
+                    <div class="kpi-label">All Bookings</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <div class="kpi-icon purple"><i class="fa-solid fa-car-wash"></i></div>
+                        <span class="kpi-trend up"><i class="fa-solid fa-car"></i> Active</span>
+                    </div>
+                    <div class="kpi-value" style="font-size: 1.4rem;">
+                        {{ active_count|default:0 }}
+                    </div>
+                    <div class="kpi-label">Active Booking{% if active_count != 1 %}s{% endif %}</div>
+                </div>
+            </div>
+
+            <!-- Current Active Bookings Section (Home View) -->
+            <div class="panel-card" style="margin-bottom: 2rem;">
+                <div class="panel-header" style="border-bottom: 1px solid var(--border-light); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                    <div class="panel-title" style="font-size: 1.25rem; color: var(--primary-cyan);">
+                        <i class="fa-solid fa-car-side" style="color: var(--primary-gold); margin-right: 0.5rem;"></i> Active Appointments & Service Status
+                    </div>
+                    {% if active_count > 0 %}
+                        <span class="logo-badge" style="background: rgba(0, 242, 254, 0.15); color: var(--primary-cyan); border: 1px solid rgba(0, 242, 254, 0.3);">
+                            {{ active_count }} Active Booking{% if active_count > 1 %}s{% endif %}
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if active_bookings %}
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        {% for booking in active_bookings %}
+                            <div class="active-booking-card" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-light); border-radius: 14px; padding: 1.4rem; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 0.5rem;">
+                                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--primary-cyan); display: flex; align-items: center; gap: 0.5rem;">
+                                        <i class="fa-solid fa-hashtag" style="color: var(--primary-gold);"></i> Booking #BK-{{ booking.id }}
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                        {% if booking.status == 'COMPLETED' %}
+                                            <span class="status-pill confirmed" style="background: rgba(250, 204, 21, 0.15); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.3);"><i class="fa-solid fa-flag-checkered"></i> Completed</span>
+                                        {% elif booking.status == 'CANCELLED' %}
+                                            <span class="status-pill" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);"><i class="fa-solid fa-xmark"></i> Cancelled</span>
+                                        {% elif booking.status == 'PENDING' %}
+                                            <span class="status-pill pending" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);"><i class="fa-solid fa-clock"></i> Pending Approval</span>
+                                        {% elif booking.status == 'APPROVED' %}
+                                            <span class="status-pill confirmed" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-circle-check"></i> Approved</span>
+                                        {% elif booking.status == 'IN_PROGRESS' %}
+                                            <span class="status-pill pending" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3);"><i class="fa-solid fa-spinner fa-spin"></i> In Progress</span>
+                                        {% else %}
+                                            <span class="status-pill confirmed">{{ booking.get_status_display }}</span>
+                                        {% endif %}
+
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="openBookingDetailsModal('{{ booking.id }}')" style="font-size: 0.78rem; padding: 0.3rem 0.6rem;">
+                                            <i class="fa-solid fa-eye" style="color: var(--primary-cyan);"></i> View Full Details
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Progress Steps Indicator -->
+                                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 1.2rem; margin-bottom: 1.2rem;">
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1rem; text-align: center;">Live Booking Progress Status</div>
+                                    <div style="position: relative; max-width: 560px; margin: 0 auto;">
+                                        <!-- Connecting Progress Bar Behind Icons -->
+                                        <div style="position: absolute; top: 19px; left: 35px; right: 35px; height: 3px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; z-index: 1;">
+                                            <div style="height: 100%; border-radius: 2px; transition: width 0.4s ease;
+                                                {% if booking.status == 'COMPLETED' %}
+                                                    width: 100%; background: linear-gradient(90deg, #f59e0b, #10b981, #06b6d4, #facc15);
+                                                {% elif booking.status == 'IN_PROGRESS' %}
+                                                    width: 66%; background: linear-gradient(90deg, #f59e0b, #10b981, #06b6d4);
+                                                {% elif booking.status == 'APPROVED' or booking.status == 'CONFIRMED' %}
+                                                    width: 33%; background: linear-gradient(90deg, #f59e0b, #10b981);
+                                                {% elif booking.status == 'PENDING' %}
+                                                    width: 0%; background: #f59e0b;
+                                                {% else %}
+                                                    width: 0%; background: transparent;
+                                                {% endif %}
+                                            "></div>
+                                        </div>
+
+                                        <!-- Stepper Steps -->
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2;">
+                                            <!-- Step 1: Pending / Submitted -->
+                                            <div style="text-align: center; width: 75px;">
+                                                <div class="{% if booking.status == 'PENDING' or booking.status == 'APPROVED' or booking.status == 'CONFIRMED' or booking.status == 'IN_PROGRESS' or booking.status == 'COMPLETED' %}stepper-icon-pending{% else %}stepper-icon-off{% endif %}">
+                                                    <i class="fa-solid fa-paper-plane"></i>
+                                                </div>
+                                                <div style="font-size: 0.78rem; font-weight: 700; color: {% if booking.status == 'PENDING' %}#fbbf24{% elif booking.status == 'APPROVED' or booking.status == 'CONFIRMED' or booking.status == 'IN_PROGRESS' or booking.status == 'COMPLETED' %}var(--text-primary){% else %}var(--text-muted){% endif %};">Submitted</div>
+                                            </div>
+
+                                            <!-- Step 2: Approved -->
+                                            <div style="text-align: center; width: 75px;">
+                                                <div class="{% if booking.status == 'APPROVED' or booking.status == 'CONFIRMED' or booking.status == 'IN_PROGRESS' or booking.status == 'COMPLETED' %}stepper-icon-approved{% else %}stepper-icon-off{% endif %}">
+                                                    <i class="fa-solid fa-circle-check"></i>
+                                                </div>
+                                                <div style="font-size: 0.78rem; font-weight: 700; color: {% if booking.status == 'APPROVED' or booking.status == 'CONFIRMED' %}#34d399{% elif booking.status == 'IN_PROGRESS' or booking.status == 'COMPLETED' %}var(--text-primary){% else %}var(--text-muted){% endif %};">Approved</div>
+                                            </div>
+
+                                            <!-- Step 3: In Progress -->
+                                            <div style="text-align: center; width: 75px;">
+                                                <div class="{% if booking.status == 'IN_PROGRESS' or booking.status == 'COMPLETED' %}stepper-icon-progress{% else %}stepper-icon-off{% endif %}">
+                                                    <i class="fa-solid fa-gears{% if booking.status == 'IN_PROGRESS' %} fa-spin{% endif %}"></i>
+                                                </div>
+                                                <div style="font-size: 0.78rem; font-weight: 700; color: {% if booking.status == 'IN_PROGRESS' %}#22d3ee{% elif booking.status == 'COMPLETED' %}var(--text-primary){% else %}var(--text-muted){% endif %};">In Service</div>
+                                            </div>
+
+                                            <!-- Step 4: Completed -->
+                                            <div style="text-align: center; width: 75px;">
+                                                <div class="{% if booking.status == 'COMPLETED' %}stepper-icon-completed{% else %}stepper-icon-off{% endif %}">
+                                                    <i class="fa-solid fa-flag-checkered"></i>
+                                                </div>
+                                                <div style="font-size: 0.78rem; font-weight: 700; color: {% if booking.status == 'COMPLETED' %}#facc15{% else %}var(--text-muted){% endif %};">Completed</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Details Grid -->
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; margin-bottom: 1.2rem;">
+                                    <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Vehicle Details</div>
+                                        <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary-cyan); margin-top: 0.3rem;">{{ booking.vehicle_model }}</div>
+                                        <div style="font-size: 0.85rem; color: var(--text-primary); font-weight: 600; margin-top: 0.1rem;">Reg: {{ booking.vehicle_number }}</div>
+                                    </div>
+
+                                    <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Scheduled Date & Slot</div>
+                                        <div style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-top: 0.3rem;"><i class="fa-regular fa-calendar" style="color: var(--primary-gold); margin-right: 0.3rem;"></i> {{ booking.booking_date|date:"M d, Y" }}</div>
+                                        <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.1rem;">
+                                            {% if booking.time_slot %}
+                                                {{ booking.time_slot.start_time|time:"h:i A" }} - {{ booking.time_slot.end_time|time:"h:i A" }}
+                                            {% else %}
+                                                Standard Slot
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div style="background: rgba(245, 158, 11, 0.08); padding: 1rem; border-radius: 10px; border: 1px solid rgba(245, 158, 11, 0.2); display: flex; flex-direction: column; justify-content: space-between;">
+                                        <div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Amount</div>
+                                            <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary-gold); margin-top: 0.2rem;">₹{{ booking.grand_total }}</div>
+                                            <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.1rem;">
+                                                {% if booking.payment_status in booking.PAID_STATUSES %}
+                                                    <span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> {{ booking.get_payment_status_display }}</span>
+                                                {% elif booking.payment_status == 'PENDING_VERIFICATION' %}
+                                                    <span style="color: #38bdf8; font-weight: 700; background: rgba(56, 189, 248, 0.15); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-hourglass-half"></i> Verification Pending</span>
+                                                {% else %}
+                                                    <span style="color: #fbbf24; font-weight: 600;"><i class="fa-solid fa-clock"></i> {{ booking.get_payment_option_display }} (Unpaid)</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% if booking.payment_status == 'PENDING_VERIFICATION' %}
+                                            <button type="button" class="btn btn-secondary btn-sm"
+                                                    data-id="{{ booking.id }}"
+                                                    data-amount="{{ booking.grand_total }}"
+                                                    data-vehicle="{{ booking.vehicle_model }}"
+                                                    data-txnid="{{ booking.transaction_id|default:'' }}"
+                                                    onclick="openPayNowFromBtn(this)"
+                                                    style="margin-top: 0.6rem; font-size: 0.78rem; width: 100%;">
+                                                <i class="fa-solid fa-file-invoice"></i> Re-upload Proof
+                                            </button>
+                                        {% elif not booking.is_paid and booking.status != 'CANCELLED' %}
+                                            <button type="button" class="btn btn-sm"
+                                                    data-id="{{ booking.id }}"
+                                                    data-amount="{{ booking.grand_total }}"
+                                                    data-vehicle="{{ booking.vehicle_model }}"
+                                                    data-txnid="{{ booking.transaction_id|default:'' }}"
+                                                    onclick="openPayNowFromBtn(this)"
+                                                    style="margin-top: 0.6rem; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #000; font-weight: 700; border: none; box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3); width: 100%;">
+                                                <i class="fa-solid fa-qrcode"></i> Pay Now (₹{{ booking.grand_total }})
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Services Pills -->
+                                <div style="margin-bottom: 1rem;">
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem;">Service Package(s)</div>
+                                    {% for s in booking.services.all %}
+                                        <span class="status-pill pending" style="background: rgba(239, 68, 68, 0.12); color: #facc15; border: 1px solid rgba(239, 68, 68, 0.35); font-size: 0.8rem; margin-right: 0.4rem; padding: 0.3rem 0.8rem; display: inline-block; margin-bottom: 0.3rem;">
+                                            <i class="fa-solid fa-wand-magic-sparkles"></i> {{ s.name }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- Additional Charges Breakdown -->
+                                {% if booking.additional_charge > 0 %}
+                                    <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-light); padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                        <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--primary-gold); font-size: 0.85rem; margin-bottom: 0.4rem;">
+                                            <span>Base ₹{{ booking.total_amount }} + Extra Charges ₹{{ booking.additional_charge }}</span>
+                                            <span>Grand Total: ₹{{ booking.grand_total }}</span>
+                                        </div>
+                                        {% for item in booking.additional_cost_items.all %}
+                                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); padding: 0.2rem 0; border-top: 1px solid rgba(255,255,255,0.05);">
+                                                <span>• {{ item.description }}</span>
+                                                <strong style="color: var(--text-primary);">₹{{ item.amount }}</strong>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                <!-- Workshop Remarks -->
+                                {% if booking.admin_remarks %}
+                                    <div style="font-size: 0.85rem; color: #fbbf24; background: rgba(245, 158, 11, 0.1); border-left: 4px solid #fbbf24; padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                        <i class="fa-solid fa-comment-dots" style="margin-right: 0.4rem;"></i> <strong>Workshop Remarks:</strong> {{ booking.admin_remarks }}
+                                    </div>
+                                {% endif %}
+
+                                <!-- Customer Review / Feedback Block -->
+                                {% if booking.status == 'COMPLETED' and not booking.has_feedback %}
+                                    <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 1.2rem; margin-bottom: 1rem; margin-top: 1rem;">
+                                        <h4 style="color: #10b981; margin-bottom: 0.8rem; font-size: 1.05rem;"><i class="fa-solid fa-star-half-stroke"></i> Your service is complete! Leave a Review to move this to History.</h4>
+                                        <form method="POST" action="{% url 'bookingService:submit_feedback' booking.id %}">
+                                            {% csrf_token %}
+                                            <div class="form-group" style="margin-bottom: 0.8rem;">
+                                                <label style="font-size: 0.85rem;">Rating (1 to 5) *</label>
+                                                <input type="number" name="rating" min="1" max="5" value="5" class="form-input" required>
+                                            </div>
+                                            <div class="form-group" style="margin-bottom: 0.8rem;">
+                                                <label style="font-size: 0.85rem;">Comments (Optional)</label>
+                                                <textarea name="comments" rows="2" class="form-input" placeholder="Tell us about your experience..."></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-sm" style="width: 100%; background: #10b981; color: white;"><i class="fa-solid fa-paper-plane"></i> Submit Feedback & Move to History</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+
+                                <!-- Cancel Option -->
+                                <div style="margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid var(--surface-border); display: flex; justify-content: flex-end; align-items: center;">
+                                    {% if booking.can_customer_cancel %}
+                                        <a href="{% url 'bookingService:user_delete_booking' booking.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to cancel your Booking #BK-{{ booking.id }}?');">
+                                            <i class="fa-solid fa-ban"></i> Cancel Booking
+                                        </a>
+                                    {% else %}
+                                        <span style="color: var(--text-muted); font-size: 0.8rem; background: rgba(255,255,255,0.04); padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);" title="Bookings can only be cancelled before the scheduled work date">
+                                            <i class="fa-solid fa-lock" style="color: var(--primary-gold); margin-right: 0.3rem;"></i> Cancellation Closed 
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <!-- Empty State for Current Booking -->
+                    <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-secondary);">
+                        <i class="fa-solid fa-car" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 0.8rem; display: block;"></i>
+                        <h3 style="font-family: var(--font-heading); font-size: 1.2rem; margin-bottom: 0.4rem; color: var(--text-primary);">No active bookings right now</h3>
+                        <p style="font-size: 0.9rem; max-width: 450px; margin: 0 auto 1.2rem;">Ready to give your car a showroom shine? Reserve your service slot today!</p>
+                        <button class="btn btn-sm" onclick="toggleBookingPanel()"><i class="fa-solid fa-calendar-plus"></i> Reserve Service Appointment</button>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Booking History Section (Collapsible Panel) -->
+            <div id="history-panel" class="panel-card" style="display: none; margin-bottom: 2rem;">
+                <div class="panel-header" style="border-bottom: 1px solid var(--border-light); padding-bottom: 1rem; margin-bottom: 1.2rem;">
+                    <div class="panel-title"><i class="fa-solid fa-clock-rotate-left" style="color: var(--primary-cyan);"></i> My Complete Booking History</div>
+                    <button class="btn btn-secondary btn-sm" onclick="toggleBookingHistory()"><i class="fa-solid fa-xmark"></i> Close History</button>
+                </div>
+
+                {% if history_bookings %}
+                    <div class="table-responsive">
+                        <table class="custom-table" id="user-history-table" data-rows-per-page="5">
+                            <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>Vehicle Details</th>
+                                    <th>Service Package(s) & Feedback</th>
+                                    <th>Scheduled Date & Slot</th>
+                                    <th>Payment Option</th>
+                                    <th>Total Amount</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in history_bookings %}
+                                    <tr>
+                                        <td style="font-weight: 700; color: var(--primary-cyan);">#BK-{{ booking.id }}</td>
+                                        <td>
+                                            <div style="font-weight: 600; color: var(--text-primary);">{{ booking.vehicle_model }}</div>
+                                            <div style="font-size: 0.8rem; color: var(--text-muted);">{{ booking.vehicle_number }}</div>
+                                        </td>
+                                        <td>
+                                            {% for s in booking.services.all %}
+                                                <span class="status-pill pending" style="background: rgba(239, 68, 68, 0.12); color: #facc15; border: 1px solid rgba(239, 68, 68, 0.35); font-size: 0.75rem; margin-right: 0.3rem;">{{ s.name }}</span>
+                                            {% endfor %}
+                                            {% if booking.admin_remarks %}
+                                                <div style="font-size: 0.8rem; color: #fbbf24; background: rgba(245, 158, 11, 0.1); border-left: 3px solid #fbbf24; padding: 0.4rem 0.6rem; margin-top: 0.5rem; border-radius: 6px;">
+                                                    <i class="fa-solid fa-comment-dots"></i> <strong>Remarks:</strong> {{ booking.admin_remarks }}
+                                                </div>
+                                            {% endif %}
+                                            {% if booking.feedback %}
+                                                <div style="font-size: 0.8rem; color: #fbbf24; background: rgba(245, 158, 11, 0.08); border-left: 3px solid #fbbf24; padding: 0.4rem 0.6rem; margin-top: 0.5rem; border-radius: 6px;">
+                                                    <i class="fa-solid fa-star"></i> <strong>Rating:</strong> {{ booking.feedback.rating }}/5 Stars
+                                                    {% if booking.feedback.comments %}
+                                                        <div style="color: var(--text-secondary); font-style: italic; margin-top: 0.2rem;">"{{ booking.feedback.comments }}"</div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div style="font-weight: 600;">{{ booking.booking_date|date:"M d, Y" }}</div>
+                                            <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                                {% if booking.time_slot %}
+                                                    {{ booking.time_slot.start_time|time:"h:i A" }} - {{ booking.time_slot.end_time|time:"h:i A" }}
+                                                {% else %}
+                                                    Standard Slot
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if booking.payment_status in booking.PAID_STATUSES %}
+                                                <span class="status-pill confirmed" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-circle-check"></i> {{ booking.get_payment_status_display }}</span>
+                                            {% elif booking.payment_status == 'PENDING_VERIFICATION' %}
+                                                <span class="status-pill" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); display: inline-block; margin-bottom: 0.3rem;"><i class="fa-solid fa-hourglass-half"></i> Verification Pending</span>
+                                                <button type="button" class="btn btn-secondary btn-sm"
+                                                        data-id="{{ booking.id }}"
+                                                        data-amount="{{ booking.grand_total }}"
+                                                        data-vehicle="{{ booking.vehicle_model }}"
+                                                        data-txnid="{{ booking.transaction_id|default:'' }}"
+                                                        onclick="openPayNowFromBtn(this)"
+                                                        style="font-size: 0.72rem; padding: 0.2rem 0.5rem; display: block; margin-top: 0.2rem;">
+                                                    <i class="fa-solid fa-file-invoice"></i> Re-upload Proof
+                                                </button>
+                                            {% else %}
+                                                <span class="status-pill pending" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); display: inline-block; margin-bottom: 0.3rem;"><i class="fa-solid fa-clock"></i> Unpaid</span>
+                                                {% if booking.status != 'CANCELLED' %}
+                                                    <button type="button" class="btn btn-sm"
+                                                            data-id="{{ booking.id }}"
+                                                            data-amount="{{ booking.grand_total }}"
+                                                            data-vehicle="{{ booking.vehicle_model }}"
+                                                            data-txnid="{{ booking.transaction_id|default:'' }}"
+                                                            onclick="openPayNowFromBtn(this)"
+                                                            style="background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #000; font-weight: 700; font-size: 0.75rem; padding: 0.3rem 0.6rem; border: none; display: block; margin-top: 0.2rem;">
+                                                        <i class="fa-solid fa-qrcode"></i> Pay Now
+                                                    </button>
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div style="font-weight: 700; color: var(--primary-gold);">₹{{ booking.grand_total }}</div>
+                                            {% if booking.additional_charge > 0 %}
+                                                <small style="color: var(--text-muted); font-size: 0.75rem; display: block;">Base: ₹{{ booking.total_amount }} + Extra: ₹{{ booking.additional_charge }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if booking.status == 'COMPLETED' %}
+                                                <span class="status-pill confirmed" style="background: rgba(250, 204, 21, 0.15); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.3);"><i class="fa-solid fa-flag-checkered"></i> Completed</span>
+                                            {% elif booking.status == 'CANCELLED' %}
+                                                <span class="status-pill" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 700;"><i class="fa-solid fa-xmark"></i> Cancelled</span>
+                                            {% elif booking.status == 'PENDING' %}
+                                                <span class="status-pill pending" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);"><i class="fa-solid fa-clock"></i> Pending Approval</span>
+                                            {% elif booking.status == 'APPROVED' %}
+                                                <span class="status-pill confirmed" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-circle-check"></i> Approved</span>
+                                            {% elif booking.status == 'IN_PROGRESS' %}
+                                                <span class="status-pill pending" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3);"><i class="fa-solid fa-spinner"></i> In Progress</span>
+                                            {% else %}
+                                                <span class="status-pill confirmed"><i class="fa-solid fa-circle-check"></i> {{ booking.get_status_display }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="openBookingDetailsModal('{{ booking.id }}')" style="font-size: 0.75rem; padding: 0.35rem 0.65rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;">
+                                                <i class="fa-solid fa-eye" style="color: var(--primary-cyan);"></i> View Details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 2.5rem; color: var(--text-secondary);">
+                        No past booking history recorded.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Template Containers for Booking Details Modal -->
+    {% for booking in user_bookings %}
+        <div id="booking-detail-src-{{ booking.id }}" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 0.8rem; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="font-size: 1.25rem; font-weight: 800; color: var(--primary-cyan); display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-file-invoice-dollar" style="color: var(--primary-gold);"></i> Booking #BK-{{ booking.id }} Full Details
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    {% if booking.status == 'COMPLETED' %}
+                        <span class="status-pill confirmed" style="background: rgba(250, 204, 21, 0.15); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.3);"><i class="fa-solid fa-flag-checkered"></i> Completed</span>
+                    {% elif booking.status == 'CANCELLED' %}
+                        <span class="status-pill" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 700;"><i class="fa-solid fa-xmark"></i> Cancelled</span>
+                    {% elif booking.status == 'PENDING' %}
+                        <span class="status-pill pending" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);"><i class="fa-solid fa-clock"></i> Pending Approval</span>
+                    {% elif booking.status == 'APPROVED' %}
+                        <span class="status-pill confirmed" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-circle-check"></i> Approved</span>
+                    {% elif booking.status == 'IN_PROGRESS' %}
+                        <span class="status-pill pending" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3);"><i class="fa-solid fa-spinner"></i> In Progress</span>
+                    {% else %}
+                        <span class="status-pill confirmed">{{ booking.get_status_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Progress Stepper -->
+            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 1.2rem; margin-bottom: 1.2rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1rem; text-align: center;">Live Booking Progress Status</div>
+                <div style="position: relative; max-width: 520px; margin: 0 auto;">
+                    <!-- Connecting Progress Bar Behind Icons -->
+                    <div style="position: absolute; top: 19px; left: 35px; right: 35px; height: 3px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; z-index: 1;">
+                        <div style="height: 100%; border-radius: 2px; transition: width 0.4s ease;
+                            {% if booking.status == 'COMPLETED' %}
+                                width: 100%; background: linear-gradient(90deg, #f59e0b, #10b981, #06b6d4, #facc15);
+                            {% elif booking.status == 'IN_PROGRESS' %}
+                                width: 66%; background: linear-gradient(90deg, #f59e0b, #10b981, #06b6d4);
+                            {% elif booking.status == 'APPROVED' or booking.status == 'CONFIRMED' %}
+                                width: 33%; background: linear-gradient(90deg, #f59e0b, #10b981);
+                            {% elif booking.status == 'PENDING' %}
+                                width: 0%; background: #f59e0b;
+                            {% else %}
+                                width: 0%; background: transparent;
+                            {% endif %}
+                        "></div>
+                    </div>
+
+                    <!-- Stepper Steps -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2;">
+                        <div style="text-align: center; width: 75px;">
+                            <div class="{% if booking.status == 'PENDING' or booking.status == 'APPROVED' or booking.status == 'CONFIRMED' or booking.status == 'IN_PROGRESS' or booking.status == 'COMPLETED' %}stepper-icon-pending{% else %}stepper-icon-off{% endif %}">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </div>
+                            <div style="font-size: 0.78rem; font-weight: 700; color: {% if booking.status == 'PENDING' %}#fbbf24{% elif booking.status == 'APPROVED' or booking.status == 'CONFIRMED' or booking.status == 'IN_PROGRESS' or booking.status == 'COMPLETED' %}var(--text-primary){% else %}var(--text-muted){% endif %};">Submitted</div>
+                        </div>
+                        <div style="text-align: center; width: 75px;">
+                            <div class="{% if booking.status == 'APPROVED' or booking.status == 'CONFIRMED' or booking.status == 'IN_PROGRESS' or booking.status == 'COMPLETED' %}stepper-icon-approved{% else %}stepper-icon-off{% endif %}">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <div style="font-size: 0.78rem; font-weight: 700; color: {% if booking.status == 'APPROVED' or booking.status == 'CONFIRMED' %}#34d399{% elif booking.status == 'IN_PROGRESS' or booking.status == 'COMPLETED' %}var(--text-primary){% else %}var(--text-muted){% endif %};">Approved</div>
+                        </div>
+                        <div style="text-align: center; width: 75px;">
+                            <div class="{% if booking.status == 'IN_PROGRESS' or booking.status == 'COMPLETED' %}stepper-icon-progress{% else %}stepper-icon-off{% endif %}">
+                                <i class="fa-solid fa-gears{% if booking.status == 'IN_PROGRESS' %} fa-spin{% endif %}"></i>
+                            </div>
+                            <div style="font-size: 0.78rem; font-weight: 700; color: {% if booking.status == 'IN_PROGRESS' %}#22d3ee{% elif booking.status == 'COMPLETED' %}var(--text-primary){% else %}var(--text-muted){% endif %};">In Service</div>
+                        </div>
+                        <div style="text-align: center; width: 75px;">
+                            <div class="{% if booking.status == 'COMPLETED' %}stepper-icon-completed{% else %}stepper-icon-off{% endif %}">
+                                <i class="fa-solid fa-flag-checkered"></i>
+                            </div>
+                            <div style="font-size: 0.78rem; font-weight: 700; color: {% if booking.status == 'COMPLETED' %}#facc15{% else %}var(--text-muted){% endif %};">Completed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Review / Feedback -->
+            {% if booking.has_feedback %}
+                <div style="background: rgba(250, 204, 21, 0.08); border: 1px solid rgba(250, 204, 21, 0.3); border-radius: 10px; padding: 0.9rem 1.1rem; margin-bottom: 1.2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: #facc15; font-size: 0.92rem;"><i class="fa-solid fa-star"></i> Customer Rating: {{ booking.feedback.rating }}/5 Stars</strong>
+                    </div>
+                    {% if booking.feedback.comments %}
+                        <div style="font-size: 0.88rem; color: var(--text-primary); font-style: italic; margin-top: 0.4rem; background: rgba(0,0,0,0.2); padding: 0.6rem 0.8rem; border-radius: 6px; border-left: 3px solid #facc15;">
+                            "{{ booking.feedback.comments }}"
+                        </div>
+                    {% endif %}
+                </div>
+            {% elif booking.status == 'COMPLETED' %}
+                <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 1.2rem; margin-bottom: 1.2rem;">
+                    <h4 style="color: #10b981; margin-bottom: 0.8rem; font-size: 1.05rem;"><i class="fa-solid fa-star-half-stroke"></i> How did we do? Leave a Review!</h4>
+                    <form method="POST" action="{% url 'bookingService:submit_feedback' booking.id %}">
+                        {% csrf_token %}
+                        <div class="form-group" style="margin-bottom: 0.8rem;">
+                            <label style="font-size: 0.85rem;">Rating (1 to 5) *</label>
+                            <input type="number" name="rating" min="1" max="5" value="5" class="form-input" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0.8rem;">
+                            <label style="font-size: 0.85rem;">Comments (Optional)</label>
+                            <textarea name="comments" rows="2" class="form-input" placeholder="Tell us about your experience..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-sm" style="width: 100%; background: #10b981; color: white;"><i class="fa-solid fa-paper-plane"></i> Submit Feedback</button>
+                    </form>
+                </div>
+            {% endif %}
+
+            <!-- Details Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.2rem;">
+                <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Vehicle Details</div>
+                    <div style="font-size: 1.05rem; font-weight: 700; color: var(--primary-cyan); margin-top: 0.2rem;">{{ booking.vehicle_model }}</div>
+                    <div style="font-size: 0.85rem; color: var(--text-primary); font-weight: 600; margin-top: 0.1rem;">Reg: {{ booking.vehicle_number }}</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Scheduled Appointment</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-top: 0.2rem;"><i class="fa-regular fa-calendar" style="color: var(--primary-gold);"></i> {{ booking.booking_date|date:"M d, Y" }}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.1rem;">
+                        {% if booking.time_slot %}{{ booking.time_slot.start_time|time:"h:i A" }} - {{ booking.time_slot.end_time|time:"h:i A" }}{% else %}Standard Slot{% endif %}
+                    </div>
+                </div>
+                <div style="background: rgba(245, 158, 11, 0.08); padding: 1rem; border-radius: 10px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Grand Total</div>
+                    <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary-gold); margin-top: 0.2rem;">₹{{ booking.grand_total }}</div>
+                    <div style="font-size: 0.8rem; margin-top: 0.1rem;">
+                        {% if booking.payment_status in booking.PAID_STATUSES %}
+                            <span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> {{ booking.get_payment_status_display }}</span>
+                        {% elif booking.payment_status == 'PENDING_VERIFICATION' %}
+                            <span style="color: #38bdf8; font-weight: 700;"><i class="fa-solid fa-hourglass-half"></i> Verification Pending</span>
+                        {% else %}
+                            <span style="color: #fbbf24; font-weight: 600;"><i class="fa-solid fa-clock"></i> Unpaid ({{ booking.get_payment_option_display }})</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Packages -->
+            <div style="margin-bottom: 1.2rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem;">Service Package(s) Booked</div>
+                {% for s in booking.services.all %}
+                    <span class="status-pill pending" style="background: rgba(239, 68, 68, 0.12); color: #facc15; border: 1px solid rgba(239, 68, 68, 0.35); font-size: 0.85rem; margin-right: 0.4rem; padding: 0.4rem 0.9rem; display: inline-block; margin-bottom: 0.4rem;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> {{ s.name }} (₹{{ s.base_price }})
+                    </span>
+                {% endfor %}
+            </div>
+
+            <!-- Payment Details & Proof Screenshot -->
+            {% if booking.payment_option == 'PAY_NOW' or booking.transaction_id or booking.payment_screenshot %}
+                <div style="background: rgba(0, 242, 254, 0.05); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 12px; padding: 1rem; margin-bottom: 1.2rem;">
+                    <div style="font-weight: 700; color: var(--primary-cyan); font-size: 0.9rem; margin-bottom: 0.4rem;">
+                        <i class="fa-solid fa-receipt"></i> Payment Details & Verification Proof
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        Payment Option: <strong>{{ booking.get_payment_option_display }}</strong>
+                    </div>
+                    {% if booking.transaction_id %}
+                        <div style="font-size: 0.88rem; color: var(--text-primary); margin-top: 0.3rem;">
+                            Transaction ID / UTR: <strong style="color: #fbbf24; font-family: monospace; font-size: 0.95rem;">{{ booking.transaction_id }}</strong>
+                        </div>
+                    {% endif %}
+                    {% if booking.payment_screenshot %}
+                        <div style="margin-top: 0.8rem;">
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.3rem;">Payment Screenshot Proof:</div>
+                            <a href="{{ booking.payment_screenshot.url }}" target="_blank" style="display: inline-block; text-decoration: none;">
+                                <img src="{{ booking.payment_screenshot.url }}" alt="Screenshot Proof" style="max-height: 140px; max-width: 100%; border-radius: 8px; border: 1px solid var(--primary-cyan); object-fit: contain;">
+                                <div style="font-size: 0.8rem; color: var(--primary-cyan); margin-top: 0.3rem; font-weight: 600;"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open Full Image Screenshot</div>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Additional Charges Breakdown -->
+            {% if booking.additional_charge > 0 %}
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-light); padding: 0.9rem 1.1rem; border-radius: 10px; margin-bottom: 1.2rem;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--primary-gold); font-size: 0.88rem; margin-bottom: 0.4rem;">
+                        <span>Base Price ₹{{ booking.total_amount }} + Additional Work ₹{{ booking.additional_charge }}</span>
+                        <span>Grand Total: ₹{{ booking.grand_total }}</span>
+                    </div>
+                    {% for item in booking.additional_cost_items.all %}
+                        <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-secondary); padding: 0.25rem 0; border-top: 1px solid rgba(255,255,255,0.05);">
+                            <span>• {{ item.description }}</span>
+                            <strong style="color: var(--text-primary);">₹{{ item.amount }}</strong>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Workshop Remarks -->
+            {% if booking.admin_remarks %}
+                <div style="font-size: 0.88rem; color: #fbbf24; background: rgba(245, 158, 11, 0.1); border-left: 4px solid #fbbf24; padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 1.2rem;">
+                    <i class="fa-solid fa-comment-dots" style="margin-right: 0.4rem;"></i> <strong>Workshop Remarks:</strong> {{ booking.admin_remarks }}
+                </div>
+            {% endif %}
+
+
+            <!-- Modal Action Buttons -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; padding-top: 0.8rem; border-top: 1px solid var(--border-light);">
+                {% if not booking.is_paid and booking.status != 'CANCELLED' %}
+                    <button type="button" class="btn btn-sm"
+                            data-id="{{ booking.id }}"
+                            data-amount="{{ booking.grand_total }}"
+                            data-vehicle="{{ booking.vehicle_model }}"
+                            data-txnid="{{ booking.transaction_id|default:'' }}"
+                            onclick="closeBookingDetailsModal(); openPayNowFromBtn(this);"
+                            style="background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); color: #000; font-weight: 700; border: none; box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3);">
+                        <i class="fa-solid fa-qrcode"></i> Pay Now (₹{{ booking.grand_total }})
+                    </button>
+                {% else %}
+                    <div></div>
+                {% endif %}
+
+                {% if booking.can_customer_cancel %}
+                    <a href="{% url 'bookingService:user_delete_booking' booking.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to cancel your Booking #BK-{{ booking.id }}?');">
+                        <i class="fa-solid fa-ban"></i> Cancel Booking
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- Booking Details Full View Modal -->
+    <div id="bookingDetailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(6px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+        <div style="background: #12161c; border: 1px solid var(--border-light); border-radius: 16px; width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto; padding: 1.8rem; box-shadow: 0 10px 40px rgba(0,0,0,0.6); position: relative; color: var(--text-primary);">
+            <button type="button" onclick="closeBookingDetailsModal()" style="position: absolute; top: 1.2rem; right: 1.2rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div id="booking-details-modal-target">
+                <!-- Dynamically filled by openBookingDetailsModal -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript to toggle Panels and live calculate Total Amount -->
+    <script>
+        function toggleBookingPanel() {
+            var panel = document.getElementById('booking-panel');
+            var btn = document.getElementById('toggle-booking-form-btn');
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'block';
+                panel.scrollIntoView({ behavior: 'smooth' });
+                btn.innerHTML = '<i class="fa-solid fa-xmark"></i> Close Form';
+                btn.classList.add('btn-secondary');
+            } else {
+                panel.style.display = 'none';
+                btn.innerHTML = '<i class="fa-solid fa-calendar-plus"></i> Book New Service';
+                btn.classList.remove('btn-secondary');
+            }
+        }
+
+        function toggleBookingHistory() {
+            var panel = document.getElementById('history-panel');
+            var btn = document.getElementById('toggle-history-btn');
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'block';
+                panel.scrollIntoView({ behavior: 'smooth' });
+                renderTablePage('user-history-table', 1);
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function updateBookingTotal() {
+            let total = 0;
+            document.querySelectorAll('input[name="services"]:checked').forEach(function(cb) {
+                total += parseFloat(cb.getAttribute('data-price')) || 0;
+            });
+            var totalFormatted = total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('calculated-total').innerText = totalFormatted;
+
+            var qrDisplay = document.getElementById('qr-display-amount');
+            if (qrDisplay) qrDisplay.innerText = totalFormatted;
+
+            var qrImg = document.getElementById('booking-form-qr-img');
+            var upiLink = document.getElementById('booking-form-upi-link');
+            var totalStr = total.toFixed(2);
+            var upiUrl = 'upi://pay?pa=0740020A0055730@paytm&pn=COUSINS%20CAR%20CARE&am=' + totalStr + '&cu=INR';
+
+            if (qrImg) {
+                qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(upiUrl);
+            }
+            if (upiLink) {
+                upiLink.href = upiUrl;
+            }
+        }
+
+        function toggleServiceCardStyle(cb) {
+            var label = cb.closest('label');
+            if (!label) return;
+            if (cb.checked) {
+                label.style.background = 'rgba(245, 158, 11, 0.12)';
+                label.style.borderColor = '#f59e0b';
+                label.style.boxShadow = '0 0 15px rgba(245, 158, 11, 0.2)';
+            } else {
+                label.style.background = 'rgba(255, 255, 255, 0.03)';
+                label.style.borderColor = 'var(--border-light)';
+                label.style.boxShadow = 'none';
+            }
+        }
+
+        function togglePaymentCardStyle() {
+            var payNowRadio = document.querySelector('input[name="payment_option"][value="PAY_NOW"]');
+            var payNowQrBox = document.getElementById('booking-pay-now-qr-box');
+            var formTxnId = document.getElementById('form-pay-txnid');
+            var formScreenshot = document.getElementById('form-pay-screenshot');
+
+            document.querySelectorAll('.payment-radio-card').forEach(function(card) {
+                var radio = card.querySelector('input[type="radio"]');
+                if (radio && radio.checked) {
+                    card.style.background = 'rgba(245, 158, 11, 0.12)';
+                    card.style.borderColor = '#f59e0b';
+                    card.style.boxShadow = '0 0 15px rgba(245, 158, 11, 0.2)';
+                } else {
+                    card.style.background = 'rgba(255, 255, 255, 0.03)';
+                    card.style.borderColor = 'var(--border-light)';
+                    card.style.boxShadow = 'none';
+                }
+            });
+
+            if (payNowRadio && payNowRadio.checked) {
+                if (payNowQrBox) payNowQrBox.style.display = 'block';
+                if (formTxnId) formTxnId.required = true;
+                if (formScreenshot) formScreenshot.required = true;
+                updateBookingTotal();
+            } else {
+                if (payNowQrBox) payNowQrBox.style.display = 'none';
+                if (formTxnId) formTxnId.required = false;
+                if (formScreenshot) formScreenshot.required = false;
+            }
+        }
+
+        function validateBookingForm(event) {
+            var selectedServices = document.querySelectorAll('input[name="services"]:checked');
+            if (selectedServices.length === 0) {
+                alert('Please select at least one service package.');
+                if (event) event.preventDefault();
+                return false;
+            }
+
+            var payNowRadio = document.querySelector('input[name="payment_option"][value="PAY_NOW"]');
+            if (payNowRadio && payNowRadio.checked) {
+                var txnInput = document.getElementById('form-pay-txnid');
+                var screenshotInput = document.getElementById('form-pay-screenshot');
+                var txnVal = txnInput ? txnInput.value.trim() : '';
+
+                if (!txnVal || !/^\d{12}$/.test(txnVal)) {
+                    alert('Transaction ID / UTR must be exactly 12 numeric digits (e.g. 426801928475).');
+                    if (txnInput) txnInput.focus();
+                    if (event) event.preventDefault();
+                    return false;
+                }
+
+                if (!screenshotInput || !screenshotInput.files || screenshotInput.files.length === 0) {
+                    alert('Payment screenshot proof is required when selecting Pay Now option.');
+                    if (screenshotInput) screenshotInput.focus();
+                    if (event) event.preventDefault();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function validatePayProofForm(event) {
+            var txnInput = document.getElementById('pay-modal-txnid');
+            var screenshotInput = document.getElementById('pay-modal-screenshot-input');
+            var txnVal = txnInput ? txnInput.value.trim() : '';
+
+            if (!txnVal || !/^\d{12}$/.test(txnVal)) {
+                alert('Transaction ID / UTR must be exactly 12 numeric digits (e.g. 426801928475).');
+                if (txnInput) txnInput.focus();
+                if (event) event.preventDefault();
+                return false;
+            }
+
+            if (!screenshotInput || !screenshotInput.files || screenshotInput.files.length === 0) {
+                alert('Payment screenshot proof is required.');
+                if (screenshotInput) screenshotInput.focus();
+                if (event) event.preventDefault();
+                return false;
+            }
+            return true;
+        }
+
+        function previewFormPayScreenshot(input) {
+            var box = document.getElementById('form-pay-preview-box');
+            var img = document.getElementById('form-pay-preview-img');
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    box.style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        function setRating(bookingId, val) {
+            var hiddenInput = document.getElementById('rating-val-' + bookingId);
+            var ratingText = document.getElementById('rating-text-' + bookingId);
+            if (hiddenInput) hiddenInput.value = val;
+            if (ratingText) ratingText.innerText = val + ' Star' + (val > 1 ? 's' : '');
+
+            var container = document.getElementById('star-container-' + bookingId);
+            if (container) {
+                var stars = container.getElementsByClassName('rating-star-btn');
+                for (var i = 0; i < stars.length; i++) {
+                    var starVal = parseInt(stars[i].getAttribute('data-value'));
+                    if (starVal <= val) {
+                        stars[i].classList.remove('fa-regular');
+                        stars[i].classList.add('fa-solid');
+                        stars[i].style.color = '#fbbf24';
+                    } else {
+                        stars[i].classList.remove('fa-solid');
+                        stars[i].classList.add('fa-regular');
+                        stars[i].style.color = 'var(--text-muted)';
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // Universal Dynamic Table Pagination Engine
+        // ==========================================
+        function renderTablePage(tableElem, targetPage) {
+            if (typeof tableElem === 'string') {
+                tableElem = document.getElementById(tableElem);
+            }
+            if (!tableElem) return;
+
+            var rowsPerPage = parseInt(tableElem.dataset.rowsPerPage || '5', 10);
+            var currentPage = targetPage ? parseInt(targetPage, 10) : parseInt(tableElem.dataset.currentPage || '1', 10);
+
+            var tbody = tableElem.querySelector('tbody');
+            var allRows = [];
+            if (tbody) {
+                allRows = Array.from(tbody.querySelectorAll('tr'));
+            } else {
+                allRows = Array.from(tableElem.querySelectorAll('tr')).filter(function(tr, idx) { return idx > 0; });
+            }
+
+            var visibleEligibleRows = allRows.filter(function(tr) {
+                return tr.dataset.filterHidden !== 'true';
+            });
+
+            var totalEligible = visibleEligibleRows.length;
+            var totalPages = Math.ceil(totalEligible / rowsPerPage) || 1;
+
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            tableElem.dataset.currentPage = String(currentPage);
+
+            allRows.forEach(function(tr) {
+                tr.style.display = 'none';
+            });
+
+            var startIdx = (currentPage - 1) * rowsPerPage;
+            var endIdx = startIdx + rowsPerPage;
+
+            var pageRows = visibleEligibleRows.slice(startIdx, endIdx);
+            pageRows.forEach(function(tr) {
+                tr.style.display = '';
+            });
+
+            var parentDiv = tableElem.closest('.table-responsive') || tableElem.parentElement;
+            var container = parentDiv.parentElement.querySelector('.table-pagination-container[data-table-id="' + tableElem.id + '"]') ||
+                            parentDiv.querySelector('.table-pagination-container[data-table-id="' + tableElem.id + '"]');
+
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'table-pagination-container';
+                container.setAttribute('data-table-id', tableElem.id);
+                if (parentDiv.classList.contains('table-responsive')) {
+                    parentDiv.after(container);
+                } else {
+                    tableElem.after(container);
+                }
+            }
+
+            var startRecord = totalEligible === 0 ? 0 : startIdx + 1;
+            var endRecord = Math.min(endIdx, totalEligible);
+
+            var infoHtml = 'Showing <strong>' + startRecord + '</strong> to <strong>' + endRecord + '</strong> of <strong>' + totalEligible + '</strong> entries';
+
+            var maxPageButtons = 5;
+            var startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+            var endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+            if (endPage - startPage + 1 < maxPageButtons) {
+                startPage = Math.max(1, endPage - maxPageButtons + 1);
+            }
+
+            var controlsHtml = `<div class="table-pagination-info">${infoHtml}</div>`;
+            controlsHtml += `<div class="table-pagination-controls">`;
+            controlsHtml += `<button type="button" class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="renderTablePage('${tableElem.id}', ${currentPage - 1})">`;
+            controlsHtml += `<i class="fa-solid fa-chevron-left"></i> Prev</button>`;
+
+            for (var p = startPage; p <= endPage; p++) {
+                controlsHtml += `<button type="button" class="pagination-btn ${p === currentPage ? 'active' : ''}" onclick="renderTablePage('${tableElem.id}', ${p})">${p}</button>`;
+            }
+
+            controlsHtml += `<button type="button" class="pagination-btn" ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''} onclick="renderTablePage('${tableElem.id}', ${currentPage + 1})">`;
+            controlsHtml += `Next <i class="fa-solid fa-chevron-right"></i></button>`;
+            controlsHtml += `<select class="pagination-size-select" onchange="changeTablePageSize('${tableElem.id}', this.value)">`;
+            controlsHtml += `<option value="5"${rowsPerPage === 5 ? ' selected' : ''}>5 / page</option>`;
+            controlsHtml += `<option value="10"${rowsPerPage === 10 ? ' selected' : ''}>10 / page</option>`;
+            controlsHtml += `<option value="25"${rowsPerPage === 25 ? ' selected' : ''}>25 / page</option>`;
+            controlsHtml += `<option value="50"${rowsPerPage === 50 ? ' selected' : ''}>50 / page</option>`;
+            controlsHtml += `</select>`;
+            controlsHtml += `</div>`;
+
+            container.innerHTML = controlsHtml;
+        }
+
+        function changeTablePageSize(tableId, newSize) {
+            var tableElem = document.getElementById(tableId);
+            if (!tableElem) return;
+            tableElem.dataset.rowsPerPage = newSize;
+            renderTablePage(tableElem, 1);
+        }
+
+        function initAllTablePaginations() {
+            var tables = document.querySelectorAll('table.custom-table, table.data-table');
+            tables.forEach(function(table, index) {
+                if (table.getAttribute('data-no-pagination') === 'true') return;
+                if (!table.id) {
+                    table.id = 'auto-table-' + (index + 1);
+                }
+                table.dataset.rowsPerPage = table.dataset.rowsPerPage || '5';
+                renderTablePage(table, 1);
+            });
+        }
+
+        function fetchSlotsForSelectedDate(dateInput, slotSelectId, statusMsgId) {
+            var selectedDate = dateInput.value;
+            var slotSelect = document.getElementById(slotSelectId);
+            var statusMsg = document.getElementById(statusMsgId);
+
+            if (!slotSelect) return;
+
+            if (!selectedDate) {
+                slotSelect.innerHTML = '<option value="">-- Please select a booking date first --</option>';
+                slotSelect.disabled = true;
+                if (statusMsg) statusMsg.style.display = 'none';
+                return;
+            }
+
+            slotSelect.innerHTML = '<option value="">⏳ Fetching available slots for date...</option>';
+            slotSelect.disabled = true;
+            if (statusMsg) {
+                statusMsg.style.display = 'block';
+                statusMsg.innerHTML = '<div style="background: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.3); color: var(--primary-yellow); padding: 0.6rem 0.9rem; border-radius: 8px; font-size: 0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> Checking date schedule & available time slots...</div>';
+            }
+
+            fetch('/api/get-slots-for-date/?date=' + encodeURIComponent(selectedDate))
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.error) {
+                        slotSelect.innerHTML = '<option value="">Error loading slots</option>';
+                        if (statusMsg) statusMsg.innerHTML = '<div style="color: #ef4444; font-size: 0.85rem;">' + data.error + '</div>';
+                        return;
+                    }
+
+                    if (data.is_closed) {
+                        slotSelect.innerHTML = '<option value="">🏖️ Workshop Closed / Holiday on ' + data.day_name + '</option>';
+                        slotSelect.disabled = true;
+                        if (statusMsg) {
+                            statusMsg.style.display = 'block';
+                            statusMsg.innerHTML = '<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; padding: 0.8rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 600;"><i class="fa-solid fa-umbrella-beach" style="margin-right: 6px;"></i> ' + data.message + '</div>';
+                        }
+                    } else {
+                        slotSelect.disabled = false;
+                        if (data.slots && data.slots.length > 0) {
+                            var optionsHtml = '<option value="">-- Select Time Slot (' + data.day_name + ') --</option>';
+                            data.slots.forEach(function(s) {
+                                if (s.is_full) {
+                                    optionsHtml += '<option value="' + s.id + '" data-max="' + (s.max_bookings || 0) + '" data-slot-num="' + s.current_slot_number + '" data-booked="' + s.booked_count + '" disabled style="color: #ef4444;">' + s.time_display + ' — FULLY BOOKED (' + s.booked_count + '/' + s.max_bookings + ' capacity reached)</option>';
+                                } else if (s.max_bookings && s.max_bookings > 0) {
+                                    optionsHtml += '<option value="' + s.id + '" data-max="' + s.max_bookings + '" data-slot-num="' + s.current_slot_number + '" data-booked="' + s.booked_count + '">' + s.time_display + ' — Slot ' + s.current_slot_number + ' of ' + s.max_bookings + ' (' + s.remaining_slots + ' available)</option>';
+                                } else {
+                                    optionsHtml += '<option value="' + s.id + '" data-max="0" data-slot-num="' + s.current_slot_number + '" data-booked="' + s.booked_count + '">' + s.time_display + ' — Slot ' + s.current_slot_number + ' (Open capacity)</option>';
+                                }
+                            });
+                            slotSelect.innerHTML = optionsHtml;
+                            if (statusMsg) {
+                                statusMsg.style.display = 'block';
+                                statusMsg.innerHTML = '<div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; padding: 0.6rem 0.9rem; border-radius: 8px; font-size: 0.85rem;"><i class="fa-solid fa-calendar-check" style="margin-right: 5px;"></i> <strong>' + data.day_name + ', ' + data.date_str + ':</strong> ' + data.slots_count + ' available time window' + (data.slots_count > 1 ? 's' : '') + '</div>';
+                            }
+                        } else {
+                            slotSelect.innerHTML = '<option value="">No active time slots configured for ' + data.day_name + '</option>';
+                            updateSlotCapacityInfo(slotSelect, 'user-slot-capacity-info');
+                            if (statusMsg) {
+                                statusMsg.style.display = 'block';
+                                statusMsg.innerHTML = '<div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; padding: 0.6rem 0.9rem; border-radius: 8px; font-size: 0.85rem;"><i class="fa-solid fa-circle-info" style="margin-right: 5px;"></i> <strong>' + data.day_name + ', ' + data.date_str + ':</strong> No active time slots found for this day.</div>';
+                            }
+                        }
+                    }
+                })
+                .catch(function(err) {
+                    slotSelect.innerHTML = '<option value="">Error loading slots</option>';
+                    updateSlotCapacityInfo(slotSelect, 'user-slot-capacity-info');
+                    if (statusMsg) {
+                        statusMsg.style.display = 'block';
+                        statusMsg.innerHTML = '<div style="color: #ef4444; font-size: 0.85rem;">Failed to connect to server.</div>';
+                    }
+                });
+        }
+
+        function updateSlotCapacityInfo(selectElem, infoDivId) {
+            var infoDiv = document.getElementById(infoDivId);
+            if (!infoDiv) return;
+            var selectedOpt = selectElem.options[selectElem.selectedIndex];
+            if (selectedOpt && selectedOpt.dataset && selectedOpt.dataset.slotNum) {
+                var maxVal = parseInt(selectedOpt.dataset.max || '0', 10);
+                var slotNum = selectedOpt.dataset.slotNum;
+                var bookedCount = selectedOpt.dataset.booked || '0';
+                infoDiv.style.display = 'block';
+                if (maxVal > 0) {
+                    infoDiv.innerHTML = '<i class="fa-solid fa-car-side" style="margin-right: 6px; color: var(--primary-gold);"></i> <strong>Booking Position:</strong> You will reserve <strong>Slot ' + slotNum + '</strong> of <strong>' + maxVal + '</strong> (' + bookedCount + ' vehicle' + (bookedCount != '1' ? 's' : '') + ' currently booked for this time slot).';
+                } else {
+                    infoDiv.innerHTML = '<i class="fa-solid fa-car-side" style="margin-right: 6px; color: var(--primary-gold);"></i> <strong>Booking Position:</strong> You will reserve <strong>Slot ' + slotNum + '</strong> (' + bookedCount + ' vehicle' + (bookedCount != '1' ? 's' : '') + ' currently booked for this time slot).';
+                }
+            } else {
+                infoDiv.style.display = 'none';
+            }
+        }
+
+        function toggleProfileDropdown(e) {
+            e.stopPropagation();
+            var menu = document.getElementById('profileDropdownMenu');
+            if (menu) menu.classList.toggle('show');
+        }
+
+        document.addEventListener('click', function(e) {
+            var menu = document.getElementById('profileDropdownMenu');
+            if (menu && menu.classList.contains('show')) {
+                menu.classList.remove('show');
+            }
+        });
+
+        function openEditProfileModal() {
+            var m = document.getElementById('editProfileModal');
+            var form = document.getElementById('edit-profile-form');
+            if (form) form.reset();
+            
+            var errs = ['edit-profile-error-box', 'edit-name-err', 'edit-phone-err', 'edit-email-err'];
+            errs.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            
+            if (m) m.style.display = 'flex';
+        }
+
+        function closeEditProfileModal() {
+            var m = document.getElementById('editProfileModal');
+            if (m) m.style.display = 'none';
+        }
+
+        function openChangePasswordModal() {
+            var m = document.getElementById('changePasswordModal');
+            var form = document.getElementById('change-pwd-form');
+            if (form) form.reset();
+            
+            var errBox = document.getElementById('chg-pwd-error-box');
+            if (errBox) errBox.style.display = 'none';
+            var confirmMsg = document.getElementById('chg-confirm-match-msg');
+            if (confirmMsg) confirmMsg.style.display = 'none';
+
+            if (m) m.style.display = 'flex';
+        }
+
+        function closeChangePasswordModal() {
+            var m = document.getElementById('changePasswordModal');
+            if (m) m.style.display = 'none';
+        }
+
+        function togglePasswordVisibility(inputId, btnElem) {
+            var input = document.getElementById(inputId);
+            var icon = btnElem ? btnElem.querySelector('i') : null;
+            if (!input) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                    icon.style.color = 'var(--primary-cyan)';
+                }
+            } else {
+                input.type = 'password';
+                if (icon) {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                    icon.style.color = '';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initAllTablePaginations();
+            var todayStr = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('input[type="date"][name="booking_date"]').forEach(function(inp) {
+                inp.min = todayStr;
+            });
+            var dateInp = document.getElementById('user-booking-date');
+            if (dateInp && dateInp.value) {
+                fetchSlotsForSelectedDate(dateInp, 'user-slot-select', 'user-date-status-msg');
+            } else {
+                var userSlotSel = document.getElementById('user-slot-select');
+                if (userSlotSel) userSlotSel.disabled = true;
+            }
+
+            // 1. Edit Profile Form Live Validation (Letters only for name, 10 digits for phone, valid email)
+            var editNameInput = document.getElementById('edit_full_name');
+            var editPhoneInput = document.getElementById('edit_phone_number');
+            var editEmailInput = document.getElementById('edit_email');
+            var editProfileForm = document.getElementById('edit-profile-form');
+            var editErrBox = document.getElementById('edit-profile-error-box');
+            var editErrText = document.getElementById('edit-profile-error-text');
+
+            if (editNameInput) {
+                editNameInput.addEventListener('input', function() {
+                    var filtered = this.value.replace(/[^a-zA-Z\s]/g, '');
+                    if (this.value !== filtered) this.value = filtered;
+                    var errEl = document.getElementById('edit-name-err');
+                    if (errEl) errEl.style.display = (this.value.length > 0 && !/^[a-zA-Z\s]+$/.test(this.value)) ? 'block' : 'none';
+                });
+            }
+
+            if (editPhoneInput) {
+                editPhoneInput.addEventListener('input', function() {
+                    var filtered = this.value.replace(/\D/g, '');
+                    if (this.value !== filtered) this.value = filtered;
+                    var errEl = document.getElementById('edit-phone-err');
+                    if (errEl) errEl.style.display = (this.value.length > 0 && this.value.length !== 10) ? 'block' : 'none';
+                });
+            }
+
+            if (editEmailInput) {
+                editEmailInput.addEventListener('input', function() {
+                    var errEl = document.getElementById('edit-email-err');
+                    var isValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(this.value);
+                    if (errEl) errEl.style.display = (this.value.length > 0 && !isValid) ? 'block' : 'none';
+                });
+            }
+
+            if (editProfileForm) {
+                editProfileForm.addEventListener('submit', function(e) {
+                    if (editErrBox) editErrBox.style.display = 'none';
+                    var nameVal = editNameInput ? editNameInput.value.trim() : '';
+                    var phoneVal = editPhoneInput ? editPhoneInput.value.trim() : '';
+                    var emailVal = editEmailInput ? editEmailInput.value.trim() : '';
+
+                    if (!/^[a-zA-Z\s]+$/.test(nameVal)) {
+                        e.preventDefault();
+                        if (editErrBox && editErrText) {
+                            editErrText.textContent = 'Full name must contain only letters and spaces.';
+                            editErrBox.style.display = 'flex';
+                        }
+                        return false;
+                    }
+
+                    if (!/^\d{10}$/.test(phoneVal)) {
+                        e.preventDefault();
+                        if (editErrBox && editErrText) {
+                            editErrText.textContent = 'Phone number must be exactly 10 digits.';
+                            editErrBox.style.display = 'flex';
+                        }
+                        return false;
+                    }
+
+                    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailVal)) {
+                        e.preventDefault();
+                        if (editErrBox && editErrText) {
+                            editErrText.textContent = 'Please enter a valid email address.';
+                            editErrBox.style.display = 'flex';
+                        }
+                        return false;
+                    }
+                });
+            }
+
+            // 2. Change Password Form Live Validation (NO ALERT POPUPS!)
+            var changePwdInput = document.getElementById('change_new_password');
+            var changeConfirmInput = document.getElementById('change_confirm_password');
+            var changeMatchMsg = document.getElementById('chg-confirm-match-msg');
+            var changePwdForm = document.getElementById('change-pwd-form');
+            var chgErrBox = document.getElementById('chg-pwd-error-box');
+            var chgErrText = document.getElementById('chg-pwd-error-text');
+
+            function checkChgRules(val) {
+                var isLength = val.length >= 8;
+                var isUpper = /[A-Z]/.test(val);
+                var isNumber = /[0-9]/.test(val);
+                var isSpecial = /[^a-zA-Z0-9]/.test(val);
+
+                updateChgRule('chg-rule-length', isLength, '8+ Characters');
+                updateChgRule('chg-rule-upper', isUpper, 'Uppercase (A-Z)');
+                updateChgRule('chg-rule-number', isNumber, 'Number (0-9)');
+                updateChgRule('chg-rule-special', isSpecial, 'Special Char');
+
+                return isLength && isUpper && isNumber && isSpecial;
+            }
+
+            function updateChgRule(elementId, isValid, label) {
+                var el = document.getElementById(elementId);
+                if (!el) return;
+                if (isValid) {
+                    el.style.color = '#10b981';
+                    el.innerHTML = '<i class="fa-solid fa-check"></i> ' + label;
+                } else {
+                    el.style.color = '#ef4444';
+                    el.innerHTML = '<i class="fa-solid fa-xmark"></i> ' + label;
+                }
+            }
+
+            function checkChgConfirmMatch() {
+                if (!changeConfirmInput || !changeMatchMsg) return true;
+                var pVal = changePwdInput ? changePwdInput.value : '';
+                var cVal = changeConfirmInput.value;
+
+                if (!cVal) {
+                    changeMatchMsg.style.display = 'none';
+                    return true;
+                }
+
+                if (pVal === cVal) {
+                    changeMatchMsg.style.display = 'block';
+                    changeMatchMsg.style.color = '#10b981';
+                    changeMatchMsg.innerHTML = '<i class="fa-solid fa-check"></i> Passwords match';
+                    return true;
+                } else {
+                    changeMatchMsg.style.display = 'block';
+                    changeMatchMsg.style.color = '#ef4444';
+                    changeMatchMsg.innerHTML = '<i class="fa-solid fa-xmark"></i> Passwords do not match';
+                    return false;
+                }
+            }
+
+            if (changePwdInput) {
+                changePwdInput.addEventListener('input', function() {
+                    checkChgRules(this.value);
+                    checkChgConfirmMatch();
+                });
+            }
+
+            if (changeConfirmInput) {
+                changeConfirmInput.addEventListener('input', checkChgConfirmMatch);
+            }
+
+            if (changePwdForm) {
+                changePwdForm.addEventListener('submit', function(e) {
+                    if (chgErrBox) chgErrBox.style.display = 'none';
+
+                    var val = changePwdInput ? changePwdInput.value : '';
+                    var isStrong = checkChgRules(val);
+                    var isMatch = checkChgConfirmMatch();
+
+                    if (!isStrong) {
+                        e.preventDefault();
+                        if (chgErrBox && chgErrText) {
+                            chgErrText.textContent = 'New password must be at least 8 characters long and contain an uppercase letter, a number, and a special character.';
+                            chgErrBox.style.display = 'flex';
+                        }
+                        return false;
+                    }
+                    if (!isMatch) {
+                        e.preventDefault();
+                        if (chgErrBox && chgErrText) {
+                            chgErrText.textContent = 'New password and confirmation password do not match.';
+                            chgErrBox.style.display = 'flex';
+                        }
+                        return false;
+                    }
+                });
+            }
+        });
+    </script>
+
+    {% if profile_error %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            openEditProfileModal();
+            var errBox = document.getElementById('edit-profile-error-box');
+            var errText = document.getElementById('edit-profile-error-text');
+            if (errBox && errText) {
+                errText.textContent = "{{ profile_error|escapejs }}";
+                errBox.style.display = 'flex';
+            }
+        });
+    </script>
+    {% endif %}
+
+    <!-- Modal 1: Edit Profile Modal -->
+    <div id="editProfileModal" class="custom-modal-overlay" style="display: none;">
+        <div class="custom-modal-card">
+            <div class="custom-modal-header">
+                <h3><i class="fa-solid fa-user-pen" style="color: var(--primary-cyan);"></i> Edit Profile</h3>
+                <button type="button" class="modal-close-btn" onclick="closeEditProfileModal()">&times;</button>
+            </div>
+            <form method="POST" action="{% url 'bookingService:update_profile' %}" id="edit-profile-form">
+                {% csrf_token %}
+                <div id="edit-profile-error-box" class="alert-box" style="display: none; background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #fecdd3; margin-bottom: 1.2rem;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #f43f5e;"></i>
+                    <span id="edit-profile-error-text"></span>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">Full Name (Letters Only)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" name="full_name" id="edit_full_name" class="form-input" value="{{ user.full_name|default:'' }}" required placeholder="Enter full name (letters only)">
+                    </div>
+                    <div id="edit-name-err" style="display: none; font-size: 0.78rem; color: #ef4444; font-weight: 600; margin-top: 0.3rem;"><i class="fa-solid fa-circle-xmark"></i> Full name must contain only letters and spaces.</div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">Phone Number (10 Digits)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-phone input-icon"></i>
+                        <input type="text" name="phone_number" id="edit_phone_number" maxlength="10" class="form-input" value="{{ user.phone_number|default:'' }}" required placeholder="Enter 10-digit phone number">
+                    </div>
+                    <div id="edit-phone-err" style="display: none; font-size: 0.78rem; color: #ef4444; font-weight: 600; margin-top: 0.3rem;"><i class="fa-solid fa-circle-xmark"></i> Phone number must be exactly 10 digits.</div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input type="email" name="email" id="edit_email" class="form-input" value="{{ user.email|default:'' }}" required placeholder="Enter email address">
+                    </div>
+                    <div id="edit-email-err" style="display: none; font-size: 0.78rem; color: #ef4444; font-weight: 600; margin-top: 0.3rem;"><i class="fa-solid fa-circle-xmark"></i> Please enter a valid email address.</div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeEditProfileModal()">Cancel</button>
+                    <button type="submit" class="btn btn-sm"><i class="fa-solid fa-floppy-disk"></i> Save Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Change Password Modal -->
+    {% if password_error %}
+    <div id="changePasswordModal" class="custom-modal-overlay" style="display: flex;">
+    {% else %}
+    <div id="changePasswordModal" class="custom-modal-overlay" style="display: none;">
+    {% endif %}
+        <div class="custom-modal-card">
+            <div class="custom-modal-header">
+                <h3><i class="fa-solid fa-key" style="color: var(--primary-yellow);"></i> Change Password</h3>
+                <button type="button" class="modal-close-btn" onclick="closeChangePasswordModal()">&times;</button>
+            </div>
+            <form method="POST" action="{% url 'bookingService:change_password' %}" id="change-pwd-form">
+                {% csrf_token %}
+                
+                {% if password_error %}
+                <div class="alert-box" style="display: flex; align-items: flex-start; background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #fecdd3; margin-bottom: 1.2rem; padding: 1rem; border-radius: 8px;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #f43f5e; margin-right: 0.5rem; margin-top: 0.2rem;"></i>
+                    <span>{{ password_error }}</span>
+                </div>
+                {% endif %}
+                
+                <div id="chg-pwd-error-box" class="alert-box" style="display: none; align-items: flex-start; background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #fecdd3; margin-bottom: 1.2rem; padding: 1rem; border-radius: 8px;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #f43f5e; margin-right: 0.5rem; margin-top: 0.2rem;"></i>
+                    <span id="chg-pwd-error-text"></span>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">Current Password</label>
+                    <div class="input-wrapper" style="position: relative;">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" name="old_password" id="change_old_password" class="form-input" required placeholder="Enter current password" style="padding-right: 2.8rem;">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('change_old_password', this)" title="Show/Hide Password" aria-label="Toggle current password visibility">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">New Password</label>
+                    <div class="input-wrapper" style="position: relative;">
+                        <i class="fa-solid fa-key input-icon"></i>
+                        <input type="password" name="new_password" id="change_new_password" class="form-input" required placeholder="Enter new password" style="padding-right: 2.8rem;">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('change_new_password', this)" title="Show/Hide Password" aria-label="Toggle new password visibility">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="password-rules-box" style="margin-top: 0.6rem; font-size: 0.78rem; background: rgba(0,0,0,0.25); border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.6rem 0.8rem;">
+                        <div style="font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem;">New password requirements:</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem;" id="change-pwd-rules">
+                            <span id="chg-rule-length" style="color: #ef4444; transition: color 0.2s;"><i class="fa-solid fa-xmark"></i> 8+ Characters</span>
+                            <span id="chg-rule-upper" style="color: #ef4444; transition: color 0.2s;"><i class="fa-solid fa-xmark"></i> Uppercase (A-Z)</span>
+                            <span id="chg-rule-number" style="color: #ef4444; transition: color 0.2s;"><i class="fa-solid fa-xmark"></i> Number (0-9)</span>
+                            <span id="chg-rule-special" style="color: #ef4444; transition: color 0.2s;"><i class="fa-solid fa-xmark"></i> Special Char</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">Confirm New Password</label>
+                    <div class="input-wrapper" style="position: relative;">
+                        <i class="fa-solid fa-check-double input-icon"></i>
+                        <input type="password" name="confirm_password" id="change_confirm_password" class="form-input" required placeholder="Confirm new password" style="padding-right: 2.8rem;">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('change_confirm_password', this)" title="Show/Hide Password" aria-label="Toggle confirm password visibility">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+                    <div id="chg-confirm-match-msg" style="display: none; font-size: 0.78rem; font-weight: 600; margin-top: 0.4rem;"></div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeChangePasswordModal()">Cancel</button>
+                    <button type="submit" class="btn btn-sm" style="background: var(--grad-gold); color: #000;"><i class="fa-solid fa-shield-halved"></i> Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pay Now & Payment Verification Modal -->
+    <div id="payNowModal" class="custom-modal-overlay" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(6px); z-index: 99999; padding: 1rem;">
+        <div class="custom-modal-card" style="max-width: 680px; width: 100%; max-height: 92vh; overflow-y: auto; background: rgba(18, 22, 28, 0.98); border: 1px solid rgba(0, 242, 254, 0.4); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8); border-radius: 16px; padding: 1.5rem; margin: auto; position: relative;">
+            
+            <div class="custom-modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.8rem; margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-weight: 700; color: var(--primary-cyan); font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-qrcode" style="color: #facc15;"></i> Scan UPI QR Code to Pay Service Amount
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closePayNowModal()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem;">&times;</button>
+            </div>
+
+            <!-- Booking & Amount Reference Banner -->
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 242, 254, 0.06); border: 1px solid rgba(0, 242, 254, 0.25); border-radius: 12px; padding: 0.8rem 1.2rem; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <span style="font-weight: 800; color: var(--text-primary); font-size: 1rem;" id="pay-modal-booking-ref">Booking #BK-00</span>
+                    <span style="font-size: 0.85rem; color: var(--text-muted); margin-left: 0.6rem;" id="pay-modal-vehicle">Vehicle Details</span>
+                </div>
+                <span class="badge" style="background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 0.95rem; font-weight: 800; padding: 4px 14px; border-radius: 20px;">
+                    Total Amount: ₹<span id="pay-modal-amount">0.00</span>
+                </span>
+            </div>
+
+            <!-- Dynamic UPI QR Code & Merchant Info Box (Same as Booking Form) -->
+            <div style="display: grid; grid-template-columns: auto 1fr; gap: 1.2rem; align-items: center; background: rgba(0,0,0,0.35); border: 1px solid var(--border-light); padding: 1.2rem; border-radius: 12px; margin-bottom: 1.2rem;">
+                <div style="text-align: center; background: #ffffff; padding: 10px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); flex-shrink: 0;">
+                    <img id="pay-modal-qr-img" src="" alt="UPI QR Code" style="width: 170px; height: 170px; display: block; object-fit: contain;">
+                </div>
+                <div style="text-align: left;">
+                    <div style="font-weight: 800; color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.2rem;">COUSINS CAR CARE</div>
+                    <div style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+                        Merchant UPI ID: <strong style="color: #fbbf24; font-family: monospace; font-size: 0.95rem;">0740020A0055730</strong>
+                    </div>
+                    <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 0.9rem;">
+                        Scan QR code using Google Pay, PhonePe, Paytm, or BHIM UPI app to complete payment.
+                    </p>
+                    <a id="pay-modal-upi-link" href="#" class="btn btn-sm" style="background: #10b981; color: #fff; font-weight: 700; text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
+                        <i class="fa-solid fa-mobile-screen-button"></i> Open UPI App to Pay
+                    </a>
+                </div>
+            </div>
+
+            <!-- Payment Submission Form -->
+            <form id="pay-proof-form" method="POST" action="" enctype="multipart/form-data" onsubmit="return validatePayProofForm(event)">
+                {% csrf_token %}
+
+                <!-- Verification Input Fields Grid (Side-by-side like Booking Form) -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; text-align: left;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; display: block;">Transaction ID / UTR Ref Number *</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-receipt input-icon"></i>
+                            <input type="text" name="transaction_id" id="pay-modal-txnid" class="form-input" placeholder="e.g. 426801928475" required maxlength="12" pattern="\d{12}" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 12)" style="text-transform: uppercase;">
+                        </div>
+                        <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.25rem;">Enter the 12-digit UTR from your payment app.</small>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; display: block;">Upload Payment Screenshot *</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-image input-icon"></i>
+                            <input type="file" name="payment_screenshot" id="pay-modal-screenshot-input" accept="image/*" required class="form-input" style="padding-top: 0.5rem;" onchange="previewPayScreenshot(this)">
+                        </div>
+                        <div id="pay-screenshot-preview-box" style="display: none; margin-top: 0.5rem; text-align: center;">
+                            <img id="pay-screenshot-preview-img" src="" alt="Screenshot Preview" style="max-height: 100px; max-width: 100%; border-radius: 8px; border: 1px solid var(--primary-cyan);">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Actions -->
+                <div style="display: flex; gap: 0.8rem; justify-content: flex-end; margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closePayNowModal()"><i class="fa-solid fa-xmark"></i> Cancel</button>
+                    <button type="submit" class="btn btn-sm" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #000; font-weight: 700; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); border: none;">
+                        <i class="fa-solid fa-paper-plane"></i> Submit Payment Proof
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openPayNowFromBtn(btn) {
+            if (!btn || !btn.dataset) return;
+            openPayNowModal(btn.dataset.id, btn.dataset.amount, btn.dataset.vehicle, btn.dataset.txnid || '');
+        }
+
+        function openPayNowModal(bookingId, amount, vehicleModel, existingTxnId) {
+            document.getElementById('pay-modal-booking-ref').innerText = 'Booking #BK-' + bookingId;
+            document.getElementById('pay-modal-vehicle').innerText = 'Vehicle: ' + vehicleModel;
+            document.getElementById('pay-modal-amount').innerText = '₹' + amount;
+            
+            // Set dynamic UPI app link & QR code image URL (same QR API as booking form)
+            var cleanAmount = (parseFloat(amount) || 0).toFixed(2);
+            var upiUrl = 'upi://pay?pa=0740020A0055730@paytm&pn=COUSINS%20CAR%20CARE&am=' + cleanAmount + '&cu=INR&tn=Booking%20BK-' + bookingId;
+
+            var qrImg = document.getElementById('pay-modal-qr-img');
+            if (qrImg) {
+                qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(upiUrl);
+            }
+
+            var upiLink = document.getElementById('pay-modal-upi-link');
+            if (upiLink) {
+                upiLink.href = upiUrl;
+            }
+
+            // Set Form action
+            const formAction = "{% url 'bookingService:submit_payment_proof' 0 %}".replace('0', bookingId);
+            document.getElementById('pay-proof-form').action = formAction;
+
+            if (existingTxnId) {
+                document.getElementById('pay-modal-txnid').value = existingTxnId;
+            } else {
+                document.getElementById('pay-modal-txnid').value = '';
+            }
+
+            document.getElementById('pay-screenshot-preview-box').style.display = 'none';
+            document.getElementById('pay-modal-screenshot-input').value = '';
+
+            const modal = document.getElementById('payNowModal');
+            modal.style.display = 'flex';
+        }
+
+        function closePayNowModal() {
+            document.getElementById('payNowModal').style.display = 'none';
+        }
+
+        function openBookingDetailsModal(bookingId) {
+            var src = document.getElementById('booking-detail-src-' + bookingId);
+            var target = document.getElementById('booking-details-modal-target');
+            if (src && target) {
+                target.innerHTML = src.innerHTML;
+                document.getElementById('bookingDetailsModal').style.display = 'flex';
+            }
+        }
+
+        function closeBookingDetailsModal() {
+            var modal = document.getElementById('bookingDetailsModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeBookingDetailsModal();
+                closePayNowModal();
+            }
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmLogout(event, url) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Sign Out?',
+                text: "You will be logged out of your session.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f43f5e',
+                cancelButtonColor: '#374151',
+                confirmButtonText: 'Yes, log out',
+                background: '#12161c',
+                color: '#fff',
+                customClass: {
+                    popup: 'border border-gray-700 rounded-xl shadow-2xl'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cousins Car Care | Premium Auto Detailing & Ceramic Coating</title>
+    <meta name="description" content="Experience top-tier car detailing, ceramic coating, paint correction, and interior restoration at Cousins Car Care. Book your appointment online today.">
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+    <!-- Ambient Glowing Background Orbs -->
+    <div class="bg-ambient">
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-2"></div>
+        <div class="glow-orb glow-orb-3"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="{% url 'bookingService:home' %}" class="logo">
+            <img src="{% static 'logo.svg' %}" alt="Cousins Car Care Logo" class="logo-brand-img">
+        </a>
+
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#services">Our Services</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+            <li><a href="#promotions">Announcements & Promotions</a></li>
+            <li><a href="#reviews">Customer Reviews</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#footer">Contact Us</a></li>
+        </ul>
+
+        <div class="nav-actions">
+            {% if user.is_authenticated %}
+                <a href="{% url 'bookingService:dashboard_redirect' %}" class="user-profile-badge" title="Go to My Dashboard / Profile">
+                    <div class="profile-avatar-icon">
+                        <i class="fa-solid fa-circle-user"></i>
+                    </div>
+                    <span class="user-name-text">{{ user.full_name|default:user.username }}</span>
+                </a>
+                {% if user.role != 'admin' %}
+                <a href="{% url 'bookingService:dashboard_redirect' %}" class="btn"><i class="fa-regular fa-calendar-check"></i> Book Now</a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'bookingService:dashboard_redirect' %}" class="btn"><i class="fa-regular fa-calendar-check"></i> Book Now</a>
+                <a href="{% url 'bookingService:login' %}" class="btn btn-outline btn-sm"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+                <a href="{% url 'bookingService:register' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-user-plus"></i> Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <!-- 1. Home / Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-container" style="display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 850px;">
+                <div class="hero-content" style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="hero-tag">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Welcome to Cousins Car Care
+                    </div>
+                    <h1 class="hero-title"><span>Cousins Car Care</span><br>Precision Detailing & Showroom Perfection</h1>
+                    <p class="hero-desc" style="max-width: 680px;">
+                        Give your car the luxury treatment it deserves. From ultra-hydrophobic ceramic coatings to deep interior rejuvenation, we restore every vehicle to peak elegance.
+                    </p>
+                    <div class="hero-actions" style="justify-content: center; margin-bottom: 0;">
+                        {% if user.is_authenticated %}
+                            {% if user.role != 'admin' %}
+                            <a href="{% url 'bookingService:dashboard_redirect' %}" class="btn btn-lg"><i class="fa-solid fa-calendar-plus"></i> Book Your Appointment</a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'bookingService:login' %}" class="btn btn-lg"><i class="fa-solid fa-calendar-plus"></i> Book Your Appointment</a>
+                        {% endif %}
+                        <a href="#services" class="btn btn-secondary btn-lg"><i class="fa-solid fa-list-check"></i> View Services</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 1.5. About Us Section -->
+        <section id="about" class="section">
+            <div class="section-header">
+                <span class="section-subtitle"><i class="fa-solid fa-award"></i> Established Since 2016</span>
+                <h2 class="section-title">About <span>Cousins Car Care</span></h2>
+                <p class="section-desc">Automated excellence, master craftsmanship, and maximum customer satisfaction in Kodungallur, Thrissur.</p>
+            </div>
+
+            <div class="about-grid">
+                <div class="about-card-primary">
+                    <div>
+                        <div class="about-tag-pill">
+                            <i class="fa-solid fa-shield-halved"></i> Premier Automated Garage
+                        </div>
+                        <h3>Leading Automotive Engineering & <span>Detailing Hub</span></h3>
+                        <p>
+                            Established in 2016, <strong>Cousins Service Station</strong> in Kodungallur, Thrissur is a top player in car washing, automotive detailing, and tyre services. We are a well-equipped, automated workshop committed to lifelong growth, safety, and 100% customer satisfaction.
+                        </p>
+                        <p>
+                            Our team of highly qualified automobile engineers possesses specialized skill sets dedicated to providing an elevated client experience. As trusted partners for top tyre brands (Apollo, CEAT, JK, Bridgestone) and RCM products, we ensure your vehicle receives showroom perfection.
+                        </p>
+                    </div>
+
+                    <div class="about-badge-bar">
+                        <div class="about-badge-item">
+                            <div class="about-badge-icon">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </div>
+                            <div class="about-badge-info">
+                                <h5>2016</h5>
+                                <p>Established Year</p>
+                            </div>
+                        </div>
+                        <div class="about-badge-item">
+                            <div class="about-badge-icon" style="color: var(--primary-yellow); background: rgba(250, 204, 21, 0.12);">
+                                <i class="fa-solid fa-user-gear"></i>
+                            </div>
+                            <div class="about-badge-info">
+                                <h5>Certified</h5>
+                                <p>Automobile Engineers</p>
+                            </div>
+                        </div>
+                        <div class="about-badge-item">
+                            <div class="about-badge-icon" style="color: #22c55e; background: rgba(34, 197, 94, 0.12);">
+                                <i class="fa-solid fa-credit-card"></i>
+                            </div>
+                            <div class="about-badge-info">
+                                <h5>UPI & Cards</h5>
+                                <p>Digital Payments</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-features-grid">
+                    <div class="about-feature-box">
+                        <div class="about-feature-icon">
+                            <i class="fa-solid fa-microchip"></i>
+                        </div>
+                        <h4>Automated Workshop</h4>
+                        <p>State-of-the-art machinery and precision detailing equipment for unmatched finish and care.</p>
+                    </div>
+
+                    <div class="about-feature-box">
+                        <div class="about-feature-icon" style="color: var(--primary-yellow); background: rgba(250, 204, 21, 0.12);">
+                            <i class="fa-solid fa-compact-disc"></i>
+                        </div>
+                        <h4>Multi-Brand Tyre Hub</h4>
+                        <p>Authorized dealers for Apollo, CEAT, JK Tyre, and Bridgestone with expert alignment.</p>
+                    </div>
+
+                    <div class="about-feature-box">
+                        <div class="about-feature-icon" style="color: #a855f7; background: rgba(168, 85, 247, 0.12);">
+                            <i class="fa-solid fa-handshake"></i>
+                        </div>
+                        <h4>Customer-Centric Goal</h4>
+                        <p>Building long-term client relationships and safety priorities as core company values.</p>
+                    </div>
+
+                    <div class="about-feature-box">
+                        <div class="about-feature-icon" style="color: #3b82f6; background: rgba(59, 130, 246, 0.12);">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                        </div>
+                        <h4>Prime Kodungallur Location</h4>
+                        <p>Conveniently located Near Gouri Shankar Hospital, Pullirada with easy road access.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Services Catalogue Section -->
+        <section id="services" class="section">
+            <div class="section-header">
+                <span class="section-subtitle"><i class="fa-solid fa-book-open"></i> Complete Detailing Menu</span>
+                <h2 class="section-title">Service Categories and <span>Base Pricing</span></h2>
+                <p class="section-desc">Browse our complete catalogue of premium vehicle care services, ceramic coatings, and custom detailing solutions.</p>
+            </div>
+
+            <div class="services-grid">
+                {% for service in services %}
+                    <div class="service-card">
+                        {% if service.image %}
+                            <div style="height: 180px; width: 100%; border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 1.2rem;">
+                                <img src="{{ service.image.url }}" alt="{{ service.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                        {% else %}
+                            <div class="service-icon-wrapper">
+                                <i class="fa-solid fa-car-side"></i>
+                            </div>
+                        {% endif %}
+
+                        <span class="status-pill pending" style="margin-bottom: 0.8rem; align-self: flex-start;">{{ service.category }}</span>
+                        <h3 class="service-title">{{ service.name }}</h3>
+                        <p class="service-desc">{{ service.description }}</p>
+                        
+                        <div class="service-footer">
+                            <div class="service-price">₹{{ service.base_price }}</div>
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'bookingService:dashboard_redirect' %}" class="btn btn-sm"><i class="fa-solid fa-calendar-check"></i> Book Service</a>
+                            {% else %}
+                                <a href="{% url 'bookingService:login' %}" class="btn btn-sm"><i class="fa-solid fa-calendar-check"></i> Book Service</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; background: var(--bg-card); border: 1px solid var(--surface-border); border-radius: var(--radius-md);">
+                        <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 3rem; color: var(--primary-cyan); margin-bottom: 1rem; display: block;"></i>
+                        <h3 style="font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 0.5rem;">No Detailing Services Available Yet</h3>
+                        <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem;">Admin hasn't added any services to the system database yet. Log into the Admin Dashboard to add services!</p>
+                        {% if user.is_authenticated and user.role == 'admin' %}
+                            <a href="{% url 'bookingService:admin_dashboard' %}" class="btn"><i class="fa-solid fa-plus"></i> Add Service in Admin Panel</a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- 3. Gallery Section -->
+        <section id="gallery" class="section">
+            <div class="section-header">
+                <span class="section-subtitle">Showroom Portfolio</span>
+                <h2 class="section-title">Our Detailing <span>Gallery</span></h2>
+                <p class="section-desc">Explore recent transformations, high-gloss ceramic finishes, and interior restorations.</p>
+            </div>
+
+            <div class="reviews-marquee-container">
+                <div class="reviews-grid" id="gallery-marquee-grid" style="gap: 1.5rem;">
+                    {% for item in gallery_items %}
+                        <div class="gallery-card" style="width: 320px; flex-shrink: 0;">
+                            <div class="gallery-img-box">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                                {% else %}
+                                    <i class="fa-solid fa-car-side"></i>
+                                {% endif %}
+                                <span class="gallery-badge">{{ item.category }}</span>
+                            </div>
+                            <div class="gallery-info">
+                                <h3>{{ item.title }}</h3>
+                                {% if item.description %}<p>{{ item.description }}</p>{% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div style="width: 100%; text-align: center; padding: 3rem 1rem; background: var(--bg-card); border: 1px solid var(--surface-border); border-radius: var(--radius-md);">
+                            <i class="fa-solid fa-images" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
+                            <h3 style="font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem;">No Gallery Items Yet</h3>
+                            <p style="color: var(--text-secondary);">No showcase photos added yet.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <script>
+                // Duplicate gallery items for seamless marquee animation
+                document.addEventListener('DOMContentLoaded', function() {
+                    const galleryMarqueeGrid = document.getElementById('gallery-marquee-grid');
+                    if (galleryMarqueeGrid && galleryMarqueeGrid.querySelectorAll('.gallery-card').length > 0) {
+                        galleryMarqueeGrid.innerHTML += galleryMarqueeGrid.innerHTML;
+                    }
+                });
+            </script>
+        </section>
+
+        <!-- 4. Announcements & Promotions Section -->
+        <section id="promotions" class="section">
+            <div class="section-header">
+                <span class="section-subtitle"><i class="fa-solid fa-bullhorn"></i> Exclusive Deals & News</span>
+                <h2 class="section-title">Announcements & <span>Promotions</span></h2>
+                <p class="section-desc">Take advantage of active seasonal discounts, special detailing offers, and workshop announcements.</p>
+            </div>
+
+            <div class="promos-grid">
+                {% for a in announcements %}
+                    <div class="promo-card" style="background: var(--bg-card); border: 1px solid var(--surface-border); border-radius: var(--radius-md); padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                        {% if a.image %}
+                            <div style="height: 160px; width: 100%; border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 1rem;">
+                                <img src="{{ a.image.url }}" alt="{{ a.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                        {% endif %}
+
+                        <div>
+                            <span class="promo-badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 0.8rem;">
+                                <i class="fa-solid fa-fire"></i> Special Announcement
+                            </span>
+                            <h3 class="promo-title" style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.6rem;">{{ a.title }}</h3>
+                            <p class="promo-desc" style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.2rem;">{{ a.description }}</p>
+                        </div>
+
+                        <div>
+                            <div style="background: rgba(0, 242, 254, 0.08); border: 1px dashed rgba(0, 242, 254, 0.3); border-radius: 10px; padding: 0.6rem 1rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-regular fa-calendar-check"></i> Offer Period:</span>
+                                <strong style="color: var(--primary-cyan); font-size: 0.82rem;">{{ a.start_date|date:"M d" }} - {{ a.end_date|date:"M d, Y" }}</strong>
+                            </div>
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'bookingService:dashboard_redirect' %}" class="btn btn-sm" style="width: 100%; text-align: center; justify-content: center;"><i class="fa-solid fa-calendar-plus"></i> Book Service Now</a>
+                            {% else %}
+                                <a href="{% url 'bookingService:login' %}" class="btn btn-sm" style="width: 100%; text-align: center; justify-content: center;"><i class="fa-solid fa-calendar-plus"></i> Book Service Now</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; background: var(--bg-card); border: 1px solid var(--surface-border); border-radius: var(--radius-md);">
+                        <i class="fa-solid fa-bullhorn" style="font-size: 2.8rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
+                        <h3 style="font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem;">No Active Announcements</h3>
+                        <p style="color: var(--text-secondary);">Check back soon for upcoming detailing promotions and seasonal offers!</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- 5. Customer Reviews Section -->
+        <section id="reviews" class="section">
+            <div class="section-header">
+                <span class="section-subtitle">Real Client Feedback</span>
+                <h2 class="section-title">What Our <span>Clients Say</span></h2>
+                <p class="section-desc">Read genuine reviews from car owners who experienced our detailing craftsmanship.</p>
+            </div>
+
+            <div class="reviews-marquee-container">
+                <div class="reviews-grid" id="marquee-grid">
+                {% for feedback in feedbacks %}
+                    <div class="review-card">
+                        <div class="review-stars">
+                            {% if feedback.rating >= 1 %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star" style="color: var(--text-muted);"></i>{% endif %}
+                            {% if feedback.rating >= 2 %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star" style="color: var(--text-muted);"></i>{% endif %}
+                            {% if feedback.rating >= 3 %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star" style="color: var(--text-muted);"></i>{% endif %}
+                            {% if feedback.rating >= 4 %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star" style="color: var(--text-muted);"></i>{% endif %}
+                            {% if feedback.rating >= 5 %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star" style="color: var(--text-muted);"></i>{% endif %}
+                        </div>
+                        <p class="review-text">"{{ feedback.comments|default:'Exceptional service and detail quality!' }}"</p>
+                        <div class="review-author">
+                            <div class="review-avatar">
+                                {{ feedback.user.full_name|default:feedback.user.username|slice:":2"|upper }}
+                            </div>
+                            <div class="review-info">
+                                <h4>{{ feedback.user.full_name|default:feedback.user.username }}</h4>
+                                <p><i class="fa-solid fa-car"></i> {{ feedback.booking.vehicle_model|default:"Verified Client" }} &bull; {{ feedback.created_at|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <!-- Sample Placeholder Reviews if database feedback is empty -->
+                    <div class="review-card">
+                        <div class="review-stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="review-text">"Cousins Car Care brought my 5-year-old BMW back to life! The ceramic coating is so slick water just flies off. Unbelievable quality!"</p>
+                        <div class="review-author">
+                            <div class="review-avatar">JV</div>
+                            <div class="review-info">
+                                <h4>James Vance</h4>
+                                <p>Verified Customer</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="review-card">
+                        <div class="review-stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="review-text">"The interior deep clean exceeded my expectations. All stubborn leather stains were gone and the cabin smells brand new. Highly recommended!"</p>
+                        <div class="review-author">
+                            <div class="review-avatar">AM</div>
+                            <div class="review-info">
+                                <h4>Angela Miller</h4>
+                                <p>Verified Customer</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="review-card">
+                        <div class="review-stars">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="review-text">"Booking online was super smooth. The team was punctual, professional, and paid attention to every tiny curve of my car."</p>
+                        <div class="review-author">
+                            <div class="review-avatar">RK</div>
+                            <div class="review-info">
+                                <h4>Robert K.</h4>
+                                <p>Verified Customer</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+            
+            <script>
+                // Duplicate reviews for seamless marquee animation
+                document.addEventListener('DOMContentLoaded', function() {
+                    const marqueeGrid = document.getElementById('marquee-grid');
+                    if (marqueeGrid) {
+                        marqueeGrid.innerHTML += marqueeGrid.innerHTML;
+                    }
+                });
+            </script>
+        </section>
+
+        <!-- 6. Frequently Asked Questions Section -->
+        <section id="faq" class="section">
+            <div class="section-header">
+                <span class="section-subtitle"><i class="fa-solid fa-circle-question"></i> Help & Information</span>
+                <h2 class="section-title">Frequently Asked <span>Questions</span></h2>
+                <p class="section-desc">Got questions about our detailing process, location, or scheduling? Find quick answers below.</p>
+            </div>
+
+            <div class="faq-grid">
+                <div class="faq-card">
+                    <h4><i class="fa-solid fa-circle-question"></i> 1. How can I locate Cousins Service Station in Kodungallur, Thrissur?</h4>
+                    <p>Cousins Service Station is located Near Gouri Shankar Hospital, Pullirada, Kodungallur, Thrissur. It is easily accessible via all main transport routes for first-time visitors.</p>
+                </div>
+
+                <div class="faq-card">
+                    <h4><i class="fa-solid fa-circle-question"></i> 2. How often should I get my car washed or detailed?</h4>
+                    <p>If you want to maintain your car's paint finish and cabin fresh for years, you should get it professionally washed or detailed at least once every two weeks.</p>
+                </div>
+
+                <div class="faq-card">
+                    <h4><i class="fa-solid fa-circle-question"></i> 3. Does the car wash remove all types of stains?</h4>
+                    <p>It depends on how quickly you get your car washed. Bringing your vehicle in promptly prevents stubborn environmental stains from embedding into the paint coating or leather seats.</p>
+                </div>
+
+                <div class="faq-card">
+                    <h4><i class="fa-solid fa-circle-question"></i> 4. What are your hours of operation?</h4>
+                    <p>We are open Monday through Saturday from 9:00 AM to 7:00 PM (Sunday: Holiday). Booking your slot in advance on our website guarantees a dedicated bay and hassle-free service.</p>
+                </div>
+
+                <div class="faq-card">
+                    <h4><i class="fa-solid fa-circle-question"></i> 5. How long does it take to wash or detail the car?</h4>
+                    <p>The time taken depends on the type of stains, vehicle size, and the detailing services chosen. Reserving your slot online helps streamline work execution.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer id="footer" class="footer">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="{% url 'bookingService:home' %}" class="logo">
+                        <img src="{% static 'logo.svg' %}" alt="Cousins Car Care Logo" class="logo-brand-img" style="height: 54px;">
+                    </a>
+                    <p>Your premier automotive detailing, ceramic coating, and vehicle care specialist. Transforming everyday cars into showroom masterpieces.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#services">Our Services</a></li>
+                        <li><a href="#gallery">Gallery</a></li>
+                        <li><a href="#promotions">Announcements</a></li>
+                        <li><a href="#reviews">Customer Reviews</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="#footer">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact Us</h4>
+                    <div class="footer-contact-item">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>Cousins Car Care, Arakulam Rd, near Cheraman Masjid, Kodunghallur, Kerala 680664</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <i class="fa-solid fa-phone"></i>
+                        <span>+91 90610 60083</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <i class="fa-solid fa-envelope"></i>
+                        <span>info.cousinsgroup@gmail.com</span>
+                    </div>
+
+                    <!-- Follow Us Social Links -->
+                    <div style="margin-top: 1.4rem;">
+                        <h5 style="font-family: var(--font-heading); font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;">Follow Us</h5>
+                        <div class="social-links-grid">
+                            <a href="https://www.instagram.com/cousinscarcare" class="social-icon-btn insta" title="Instagram" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="https://api.whatsapp.com/send/?phone=%2B919061060083&text&type=phone_number&app_absent=0" class="social-icon-btn whatsapp" title="WhatsApp" aria-label="WhatsApp" target="_blank" rel="noopener noreferrer">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </a>
+                            <a href="https://www.facebook.com/cousinsgroup.in#" class="social-icon-btn facebook" title="Facebook" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Working Hours</h4>
+                    <ul>
+                        <li><span style="color: var(--text-secondary);"><i class="fa-regular fa-clock" style="color: var(--primary-cyan); margin-right: 6px;"></i> Mon - Sat: 9:00 AM - 7:00 PM</span></li>
+                        <li><span style="color: var(--text-secondary);"><i class="fa-solid fa-calendar-xmark" style="color: #f43f5e; margin-right: 6px;"></i> Sunday: Holiday</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Cousins Car Care. All rights reserved.</p>
+                <p>Designed for Ultimate Automotive Performance</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast Notifications -->
+    {% if messages %}
+    <div id="toast-container" style="position: fixed; top: 90px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;">
+        {% for message in messages %}
+        <div class="toast-message {% if message.tags == 'error' %}toast-error{% else %}toast-success{% endif %}" style="
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOut 0.5s ease-out 4.5s forwards;
+            font-weight: 500;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+        ">
+            {% if message.tags == 'error' %}
+            <i class="fa-solid fa-circle-exclamation" style="font-size: 1.2rem;"></i>
+            {% else %}
+            <i class="fa-solid fa-circle-check" style="font-size: 1.2rem;"></i>
+            {% endif %}
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    <style>
+        @keyframes slideInRight {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); visibility: hidden; }
+        }
+        .toast-error {
+            background: rgba(244, 63, 94, 0.95);
+            border-left: 4px solid #be123c;
+        }
+        .toast-success {
+            background: rgba(16, 185, 129, 0.95);
+            border-left: 4px solid #059669;
+        }
+    </style>
+    <script>
+        setTimeout(() => {
+            const container = document.getElementById('toast-container');
+            if (container) {
+                container.style.display = 'none';
+            }
+        }, 5000);
+    </script>
+    {% endif %}
+
+</body>
+</html>

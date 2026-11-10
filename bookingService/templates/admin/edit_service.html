@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Service | Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <div class="bg-ambient">
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-2"></div>
+    </div>
+
+    <nav class="navbar">
+        <a href="{% url 'bookingService:home' %}" class="logo">
+            <i class="fa-solid fa-car-side"></i>
+            <span class="logo-text">Cousins</span> Car Care
+            <span class="logo-badge">ADMIN</span>
+        </a>
+        <div class="nav-actions">
+            <a href="{% url 'bookingService:admin_dashboard' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper" style="max-width: 800px; margin: 3rem auto; padding: 0 1.5rem;">
+        <div class="dash-header-card" style="margin-bottom: 2rem;">
+            <div class="dash-user-info">
+                <div class="avatar-box" style="background: var(--grad-gold);">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </div>
+                <div class="dash-user-details">
+                    <h1>Edit <span>Service</span></h1>
+                    <p>Update the details of {{ service.name }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <form method="POST" action="{% url 'bookingService:edit_service' service.id %}" enctype="multipart/form-data" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label>Service Name *</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-tag input-icon"></i>
+                        <input type="text" name="name" class="form-input" value="{{ service.name }}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Category *</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-layer-group input-icon"></i>
+                        <select name="category" class="form-input" required style="cursor: pointer;">
+                            <option value="Tire Shop" {% if service.category == 'Tire Shop' %}selected{% endif %}>Tire Shop</option>
+                            <option value="Wheel Alignment" {% if service.category == 'Wheel Alignment' %}selected{% endif %}>Wheel Alignment</option>
+                            <option value="Car Wash" {% if service.category == 'Car Wash' %}selected{% endif %}>Car Wash</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Base Price (₹ INR) *</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-indian-rupee-sign input-icon"></i>
+                        <input type="number" step="0.01" min="0" name="base_price" class="form-input" value="{{ service.base_price }}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Service Image</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-image input-icon"></i>
+                        <input type="file" name="image" class="form-input" accept="image/*" style="padding-top: 0.6rem;">
+                    </div>
+                    {% if service.image %}
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">Current: <a href="{{ service.image.url }}" target="_blank" style="color: var(--primary-cyan);">View Image</a></small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Description *</label>
+                    <textarea name="description" class="form-input" rows="4" style="padding-left: 1rem;" required>{{ service.description }}</textarea>
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="is_visible" {% if service.is_visible %}checked{% endif %} style="width: 18px; height: 18px; accent-color: var(--primary-cyan);">
+                        <span style="color: var(--text-primary);">Visible on User Dashboard & Homepage</span>
+                    </label>
+                </div>
+
+                <div style="grid-column: span 2; display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                    <a href="{% url 'bookingService:admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

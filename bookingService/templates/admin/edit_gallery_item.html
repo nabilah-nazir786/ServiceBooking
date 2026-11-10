@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Gallery Item | Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <div class="bg-ambient">
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-2"></div>
+    </div>
+
+    <nav class="navbar">
+        <a href="{% url 'bookingService:home' %}" class="logo">
+            <i class="fa-solid fa-car-side"></i>
+            <span class="logo-text">Cousins</span> Car Care
+            <span class="logo-badge">ADMIN</span>
+        </a>
+        <div class="nav-actions">
+            <a href="{% url 'bookingService:admin_dashboard' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper" style="max-width: 800px; margin: 3rem auto; padding: 0 1.5rem;">
+        <div class="dash-header-card" style="margin-bottom: 2rem;">
+            <div class="dash-user-info">
+                <div class="avatar-box" style="background: var(--grad-gold);">
+                    <i class="fa-solid fa-image"></i>
+                </div>
+                <div class="dash-user-details">
+                    <h1>Edit <span>Gallery Item</span></h1>
+                    <p>Update the details of {{ item.title }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <form action="{% url 'bookingService:edit_gallery_item' item.id %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="gallery-title">Vehicle / Item Title *</label>
+                        <input type="text" id="gallery-title" name="title" class="form-control" value="{{ item.title }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="gallery-category">Category / Service Tag *</label>
+                        <input type="text" id="gallery-category" name="category" class="form-control" value="{{ item.category }}" required>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label class="form-label" for="gallery-description">Description</label>
+                    <textarea id="gallery-description" name="description" class="form-control" rows="3">{{ item.description }}</textarea>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label class="form-label" for="gallery-image">Showcase Image</label>
+                    <input type="file" id="gallery-image" name="image" class="form-control" accept="image/*">
+                    {% if item.image %}
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">Current: <a href="{{ item.image.url }}" target="_blank" style="color: var(--primary-cyan);">View Image</a></small>
+                    {% endif %}
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="is_visible" {% if item.is_visible %}checked{% endif %} style="width: 18px; height: 18px; accent-color: var(--primary-cyan);">
+                        <span style="color: var(--text-primary);">Visible on Homepage Gallery</span>
+                    </label>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <a href="{% url 'bookingService:admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

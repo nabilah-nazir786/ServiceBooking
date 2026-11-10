@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Cousins Car Care</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+    <!-- Ambient Glowing Background Orbs -->
+    <div class="bg-ambient">
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-2"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="{% url 'bookingService:home' %}" class="logo">
+            <img src="{% static 'logo.svg' %}" alt="Cousins Car Care Logo" class="logo-brand-img">
+        </a>
+        <div class="nav-actions">
+            <a href="{% url 'bookingService:home' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="{% url 'bookingService:register' %}" class="btn btn-outline btn-sm"><i class="fa-solid fa-user-plus"></i> Sign Up</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <h2>Welcome Back</h2>
+                    <p>Sign in with your email to manage appointments & car detailing</p>
+                </div>
+
+                <form method="POST" class="auth-form">
+                    {% csrf_token %}
+                    
+                    {% if error %}
+                        <div class="alert-box">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>{{ error }}</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="id_email">Email Address</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <input type="email" name="email" class="form-input" autofocus autocomplete="email" required id="id_email" placeholder="Enter your email address" value="{{ email|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_password">Password</label>
+                        <div class="input-wrapper" style="position: relative;">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" name="password" class="form-input" autocomplete="current-password" required id="id_password" placeholder="Enter your password" style="padding-right: 2.8rem;">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('id_password', this)" title="Show/Hide Password" aria-label="Toggle password visibility">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-lg" style="width: 100%; margin-top: 1rem;">
+                        <i class="fa-solid fa-right-to-bracket"></i> Sign In
+                    </button>
+
+                    <div class="auth-footer">
+                        Don't have an account? <a href="{% url 'bookingService:register' %}">Create Account</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePasswordVisibility(inputId, btnElem) {
+            var input = document.getElementById(inputId);
+            var icon = btnElem.querySelector('i');
+            if (!input) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                    icon.style.color = 'var(--primary-cyan)';
+                }
+            } else {
+                input.type = 'password';
+                if (icon) {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                    icon.style.color = '';
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Time Slot | Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <div class="bg-ambient">
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-2"></div>
+    </div>
+
+    <nav class="navbar">
+        <a href="{% url 'bookingService:home' %}" class="logo">
+            <i class="fa-solid fa-car-side"></i>
+            <span class="logo-text">Cousins</span> Car Care
+            <span class="logo-badge">ADMIN</span>
+        </a>
+        <div class="nav-actions">
+            <a href="{% url 'bookingService:admin_dashboard' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper" style="max-width: 800px; margin: 3rem auto; padding: 0 1.5rem;">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-box" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); color: #fbbf24; margin-bottom: 1.5rem; padding: 0.8rem 1.2rem; border-radius: 10px; display: flex; align-items: center; gap: 0.8rem;">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="dash-header-card" style="margin-bottom: 2rem;">
+            <div class="dash-user-info">
+                <div class="avatar-box" style="background: var(--grad-cyan);">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div class="dash-user-details">
+                    <h1>Edit <span>Time Slot</span></h1>
+                    <p>Modify scheduled time window, frequency, and booking capacity</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <form method="POST" action="{% url 'bookingService:edit_timeslot' timeslot.id %}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                {% csrf_token %}
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Slot Frequency *</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-rotate input-icon"></i>
+                        <select name="slot_type" id="edit-slot-type" class="form-input" onchange="toggleEditDateInput()" style="background: rgba(22, 18, 20, 0.85); color: var(--text-primary);">
+                            <option value="ALL" {% if timeslot.slot_type == 'ALL' %}selected{% endif %}>Every Day (Daily Recurring)</option>
+                            <option value="WEEKDAYS" {% if timeslot.slot_type == 'WEEKDAYS' %}selected{% endif %}>Weekdays Only (Mon - Fri)</option>
+                            <option value="WEEKENDS" {% if timeslot.slot_type == 'WEEKENDS' %}selected{% endif %}>Weekends Only (Sat &amp; Sun)</option>
+                            <optgroup label="Specific Day of Week">
+                                <option value="MONDAY" {% if timeslot.slot_type == 'MONDAY' %}selected{% endif %}>Monday Only</option>
+                                <option value="TUESDAY" {% if timeslot.slot_type == 'TUESDAY' %}selected{% endif %}>Tuesday Only</option>
+                                <option value="WEDNESDAY" {% if timeslot.slot_type == 'WEDNESDAY' %}selected{% endif %}>Wednesday Only</option>
+                                <option value="THURSDAY" {% if timeslot.slot_type == 'THURSDAY' %}selected{% endif %}>Thursday Only</option>
+                                <option value="FRIDAY" {% if timeslot.slot_type == 'FRIDAY' %}selected{% endif %}>Friday Only</option>
+                                <option value="SATURDAY" {% if timeslot.slot_type == 'SATURDAY' %}selected{% endif %}>Saturday Only</option>
+                                <option value="SUNDAY" {% if timeslot.slot_type == 'SUNDAY' %}selected{% endif %}>Sunday Only</option>
+                            </optgroup>
+                            <optgroup label="Schedule Specific Date">
+                                <option value="SPECIFIC" {% if timeslot.slot_type == 'SPECIFIC' %}selected{% endif %}>Specific Scheduled Date</option>
+                            </optgroup>
+                            <optgroup label="Holiday / Closed Day Options">
+                                <option value="HOLIDAY_DATE" {% if timeslot.slot_type == 'HOLIDAY_DATE' %}selected{% endif %}>🏖️ Holiday / Closed (Specific Date)</option>
+                                <option value="HOLIDAY_RECURRING" {% if timeslot.slot_type == 'HOLIDAY_RECURRING' %}selected{% endif %}>🏖️ Holiday / Weekly Closed Day</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                {% if timeslot.slot_type != 'SPECIFIC' and timeslot.slot_type != 'HOLIDAY_DATE' %}
+                    <div class="form-group" id="edit-date-wrapper" style="grid-column: span 2; display: none;">
+                {% else %}
+                    <div class="form-group" id="edit-date-wrapper" style="grid-column: span 2;">
+                {% endif %}
+                    <label>Slot / Holiday Date *</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-calendar-day input-icon"></i>
+                        <input type="date" name="date" class="form-input" value="{{ timeslot.date|date:'Y-m-d' }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Start Time (Optional if Holiday)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-clock input-icon"></i>
+                        <input type="time" name="start_time" class="form-input" value="{{ timeslot.start_time|time:'H:i' }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>End Time (Optional if Holiday)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-clock input-icon"></i>
+                        <input type="time" name="end_time" class="form-input" value="{{ timeslot.end_time|time:'H:i' }}">
+                    </div>
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Maximum Booking Capacity *</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-users-gear input-icon"></i>
+                        <input type="number" min="0" name="max_bookings" class="form-input" value="{{ timeslot.max_bookings }}" required>
+                    </div>
+                    <small style="color: var(--text-muted); display: block; margin-top: 0.4rem;">Maximum number of customers who can book this specific time slot.</small>
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="is_available" {% if timeslot.is_available %}checked{% endif %} style="width: 18px; height: 18px; accent-color: var(--primary-cyan);">
+                        <span style="color: var(--text-primary);">Available for Customer Bookings</span>
+                    </label>
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; background: rgba(245, 158, 11, 0.1); padding: 0.8rem 1rem; border-radius: var(--radius-sm); border: 1px solid rgba(245, 158, 11, 0.3);">
+                        <input type="checkbox" name="is_holiday" {% if timeslot.is_holiday %}checked{% endif %} style="width: 18px; height: 18px; accent-color: #f59e0b;">
+                        <span style="color: #fbbf24; font-weight: 600;"><i class="fa-solid fa-umbrella-beach"></i> Mark as Workshop Holiday / Closed Day (Blocks Customer Bookings)</span>
+                    </label>
+                </div>
+
+                <div style="grid-column: span 2; display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                    <a href="{% url 'bookingService:admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleEditDateInput() {
+            var selectElem = document.getElementById('edit-slot-type');
+            var dateWrapper = document.getElementById('edit-date-wrapper');
+            if (selectElem && dateWrapper) {
+                if (selectElem.value === 'SPECIFIC' || selectElem.value === 'HOLIDAY_DATE') {
+                    dateWrapper.style.display = 'block';
+                } else {
+                    dateWrapper.style.display = 'none';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

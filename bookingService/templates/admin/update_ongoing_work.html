@@ -1,0 +1,286 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Work & Remarks | Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <div class="bg-ambient">
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-2"></div>
+    </div>
+
+    <nav class="navbar">
+        <a href="{% url 'bookingService:home' %}" class="logo">
+            <i class="fa-solid fa-car-side"></i>
+            <span class="logo-text">Cousins</span> Car Care
+            <span class="logo-badge">ADMIN</span>
+        </a>
+        <div class="nav-actions">
+            <a href="{% url 'bookingService:admin_dashboard' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="main-wrapper" style="max-width: 900px; margin: 3rem auto; padding: 0 1.5rem;">
+        <div class="dash-header-card" style="margin-bottom: 2rem;">
+            <div class="dash-user-info">
+                <div class="avatar-box" style="background: var(--grad-gold);">
+                    <i class="fa-solid fa-wrench"></i>
+                </div>
+                <div class="dash-user-details">
+                    <h1>Update <span>Work & Remarks</span></h1>
+                    <p>Booking #{{ booking.id }} &bull; {{ booking.user.full_name|default:booking.user.username }} ({{ booking.vehicle_model }})</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Details Summary Header -->
+        <div class="panel-card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary-cyan);">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; color: var(--primary-cyan); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-circle-info"></i> Booking Overview
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.9rem;">
+                <div>
+                    <span style="color: var(--text-muted); display: block; font-size: 0.8rem;">Customer Name</span>
+                    <strong style="color: var(--text-primary);">{{ booking.user.full_name|default:booking.user.username }}</strong>
+                </div>
+                <div>
+                    <span style="color: var(--text-muted); display: block; font-size: 0.8rem;">Phone Number</span>
+                    <strong style="color: var(--text-primary);">{{ booking.user.phone_number|default:"N/A" }}</strong>
+                </div>
+                <div>
+                    <span style="color: var(--text-muted); display: block; font-size: 0.8rem;">Vehicle Info</span>
+                    <strong style="color: var(--text-primary);">{{ booking.vehicle_model }}</strong>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Reg: {{ booking.vehicle_number }}</div>
+                </div>
+                <div>
+                    <span style="color: var(--text-muted); display: block; font-size: 0.8rem;">Booking Date & Slot</span>
+                    <strong style="color: var(--text-primary);">{{ booking.booking_date }}</strong>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                        {% if booking.time_slot %}
+                            {{ booking.time_slot.start_time|time:"h:i A" }} - {{ booking.time_slot.end_time|time:"h:i A" }}
+                        {% else %}
+                            Flexible Slot
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light); font-size: 0.9rem;">
+                <span style="color: var(--text-muted); display: block; font-size: 0.8rem; margin-bottom: 0.3rem;">Selected Services</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    {% for svc in booking.services.all %}
+                        <span class="badge" style="background: rgba(239, 68, 68, 0.12); color: var(--primary-yellow); border: 1px solid rgba(239, 68, 68, 0.35);">
+                            {{ svc.name }} (₹{{ svc.base_price }})
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if booking.special_instructions %}
+            <div style="margin-top: 0.75rem; font-size: 0.85rem; background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: 8px;">
+                <span style="color: var(--primary-gold); font-weight: 600;"><i class="fa-solid fa-comment-dots"></i> Customer Instructions:</span>
+                <span style="color: var(--text-secondary); display: block; margin-top: 0.2rem;">{{ booking.special_instructions }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Form for Updating Work -->
+        <div class="panel-card">
+            <form method="POST" action="{% url 'bookingService:update_ongoing_work' booking.id %}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;" onsubmit="return validateFullOngoingUpdate(this);">
+                {% csrf_token %}
+
+                <!-- Work / Job Progress Status -->
+                <div class="form-group">
+                    <label style="color: var(--text-primary); font-weight: 600;"><i class="fa-solid fa-spinner" style="color: var(--primary-yellow);"></i> Progress Status *</label>
+                    <div class="input-wrapper">
+                        <select name="status" class="form-input" style="background: rgba(22, 18, 20, 0.85); color: var(--text-primary); padding-left: 1rem;" required>
+                            {% for code, label in status_choices %}
+                                <option value="{{ code }}" {% if booking.status == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Payment Status / Mode -->
+                <div class="form-group">
+                    <label style="color: var(--text-primary); font-weight: 600;"><i class="fa-solid fa-credit-card" style="color: var(--primary-gold);"></i> Payment Mode / Status *</label>
+                    <div class="input-wrapper">
+                        <select name="payment_status" class="form-input" style="background: rgba(22, 18, 20, 0.85); color: var(--text-primary); padding-left: 1rem;" required>
+                            {% for code, label in payment_status_choices %}
+                                <option value="{{ code }}" {% if booking.payment_status == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <small style="color: var(--text-muted); display: block; margin-top: 0.3rem;">Selected option by customer: <strong>{{ booking.get_payment_option_display }}</strong></small>
+                </div>
+
+                <!-- Base Service Price -->
+                <div class="form-group" style="grid-column: span 2;">
+                    <label style="color: var(--text-primary); font-weight: 600;"><i class="fa-solid fa-indian-rupee-sign" style="color: var(--primary-yellow);"></i> Base Service Price (₹) *</label>
+                    <div class="input-wrapper" style="max-width: 300px;">
+                        <i class="fa-solid fa-indian-rupee-sign input-icon"></i>
+                        <input type="number" step="0.01" min="0" id="base_price_input" name="total_amount" class="form-input" value="{{ booking.total_amount }}" required oninput="calcGrandTotal()">
+                    </div>
+                    <small style="color: var(--text-muted); display: block; margin-top: 0.3rem;">Base price calculated during booking creation. Can be changed if needed.</small>
+                </div>
+
+                <!-- Itemized Additional Costs Section -->
+                <div class="form-group" style="grid-column: span 2; background: rgba(22, 18, 20, 0.5); border: 1px solid var(--surface-border-bright); padding: 1.25rem; border-radius: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <label style="color: var(--text-primary); font-weight: 600; font-size: 1rem; margin: 0;">
+                                <i class="fa-solid fa-layer-group" style="color: var(--primary-gold);"></i> Itemized Additional Costs & Spare Parts
+                            </label>
+                            <small style="color: var(--text-muted); display: block; margin-top: 0.2rem;">Add line items for extra parts, oils, or add-on labor. As many lines as needed can be added.</small>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="addCostRow()" style="border-color: var(--primary-gold); color: var(--primary-gold);">
+                            <i class="fa-solid fa-plus"></i> Add Item Line
+                        </button>
+                    </div>
+
+                    <div id="cost-items-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        {% if booking.additional_cost_items.all %}
+                            {% for item in booking.additional_cost_items.all %}
+                                <div class="cost-row" style="display: grid; grid-template-columns: 1fr 180px 45px; gap: 0.75rem; align-items: center;">
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-pen input-icon" style="font-size: 0.8rem;"></i>
+                                        <input type="text" name="item_description[]" class="form-input" placeholder="e.g. Synthetic Engine Oil 4L" value="{{ item.description }}" style="font-size: 0.9rem;">
+                                    </div>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-indian-rupee-sign input-icon" style="font-size: 0.8rem;"></i>
+                                        <input type="number" step="0.01" min="0" name="item_amount[]" class="form-input item-amount-input" placeholder="0.00" value="{{ item.amount }}" oninput="calcGrandTotal()" style="font-size: 0.9rem; font-weight: 600;">
+                                    </div>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeCostRow(this)" style="padding: 0.6rem; height: 100%; display: flex; align-items: center; justify-content: center;" title="Remove Line">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="cost-row" style="display: grid; grid-template-columns: 1fr 180px 45px; gap: 0.75rem; align-items: center;">
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-pen input-icon" style="font-size: 0.8rem;"></i>
+                                    <input type="text" name="item_description[]" class="form-input" placeholder="e.g. Synthetic Engine Oil 4L" style="font-size: 0.9rem;">
+                                </div>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-indian-rupee-sign input-icon" style="font-size: 0.8rem;"></i>
+                                    <input type="number" step="0.01" min="0" name="item_amount[]" class="form-input item-amount-input" placeholder="0.00" oninput="calcGrandTotal()" style="font-size: 0.9rem; font-weight: 600;">
+                                </div>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeCostRow(this)" style="padding: 0.6rem; height: 100%; display: flex; align-items: center; justify-content: center;" title="Remove Line">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Total Summary Live Preview Box -->
+                <div class="form-group" style="grid-column: span 2; background: rgba(0, 242, 254, 0.04); border: 1px dashed rgba(0, 242, 254, 0.2); padding: 1.25rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <span style="color: var(--text-muted); font-size: 0.85rem; display: block;">Price Calculation Breakdown</span>
+                        <div style="font-size: 1rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                            Base Price: <strong id="base_preview" style="color: var(--text-primary);">₹{{ booking.total_amount }}</strong> + 
+                            Additional Charges Sum: <strong id="add_preview" style="color: var(--primary-gold);">₹{{ booking.additional_charge }}</strong>
+                        </div>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-muted); font-size: 0.85rem; display: block; text-align: right;">Grand Total Payable</span>
+                        <div id="grand_preview" style="font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--primary-cyan); text-align: right;">
+                            ₹{{ booking.grand_total }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Remarks / Notes to Customer -->
+                <div class="form-group" style="grid-column: span 2;">
+                    <label style="color: var(--text-primary); font-weight: 600;"><i class="fa-solid fa-comment-medical" style="color: var(--primary-gold);"></i> Workshop Remarks & Customer Notes</label>
+                    <textarea name="admin_remarks" class="form-input" rows="4" style="padding: 1rem;" placeholder="Write any work status updates, inspection details, replaced parts info, or pickup instructions for the user (e.g. 'Engine oil flushed, brake pads replaced. Vehicle ready for pickup after 4:00 PM.').">{{ booking.admin_remarks|default:'' }}</textarea>
+                    <small style="color: var(--text-muted); display: block; margin-top: 0.3rem;"><i class="fa-solid fa-eye"></i> These remarks will be sent and displayed directly to the customer on their booking dashboard.</small>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="grid-column: span 2; display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem; border-top: 1px solid var(--border-light); padding-top: 1.5rem;">
+                    <a href="{% url 'bookingService:admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn" style="background: var(--grad-gold); color: #000; font-weight: 700;">
+                        <i class="fa-solid fa-paper-plane"></i> Save Work Details & Send Remarks
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function validateFullOngoingUpdate(form) {
+            const statusVal = form.querySelector('[name="status"]').value;
+            const paymentVal = form.querySelector('[name="payment_status"]').value;
+            const paidStatuses = ['PAID_ONLINE', 'PAID_CASH', 'PAID_UPI_CARD'];
+            
+            if (statusVal === 'COMPLETED' && !paidStatuses.includes(paymentVal)) {
+                alert('⚠️ Cannot complete work without payment!\n\nPlease select a valid paid status (Paid Cash at Workshop, Paid UPI / Card, or Paid Online) before marking this job as Completed.');
+                return false;
+            }
+            return true;
+        }
+
+        function addCostRow() {
+            const container = document.getElementById('cost-items-container');
+            const row = document.createElement('div');
+            row.className = 'cost-row';
+            row.style.cssText = 'display: grid; grid-template-columns: 1fr 180px 45px; gap: 0.75rem; align-items: center;';
+            row.innerHTML = `
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-pen input-icon" style="font-size: 0.8rem;"></i>
+                    <input type="text" name="item_description[]" class="form-input" placeholder="Item description / Part name" style="font-size: 0.9rem;">
+                </div>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-indian-rupee-sign input-icon" style="font-size: 0.8rem;"></i>
+                    <input type="number" step="0.01" min="0" name="item_amount[]" class="form-input item-amount-input" placeholder="0.00" oninput="calcGrandTotal()" style="font-size: 0.9rem; font-weight: 600;">
+                </div>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeCostRow(this)" style="padding: 0.6rem; height: 100%; display: flex; align-items: center; justify-content: center;" title="Remove Line">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            `;
+            container.appendChild(row);
+            calcGrandTotal();
+        }
+
+        function removeCostRow(btn) {
+            const container = document.getElementById('cost-items-container');
+            const rows = container.querySelectorAll('.cost-row');
+            if (rows.length > 1) {
+                btn.closest('.cost-row').remove();
+            } else {
+                const row = btn.closest('.cost-row');
+                row.querySelectorAll('input').forEach(i => i.value = '');
+            }
+            calcGrandTotal();
+        }
+
+        function calcGrandTotal() {
+            const baseInput = document.getElementById('base_price_input');
+            const baseVal = parseFloat(baseInput.value) || 0;
+
+            let totalAdd = 0;
+            document.querySelectorAll('.item-amount-input').forEach(input => {
+                const val = parseFloat(input.value) || 0;
+                totalAdd += val;
+            });
+
+            const grandVal = baseVal + totalAdd;
+
+            document.getElementById('base_preview').textContent = '₹' + baseVal.toFixed(2);
+            document.getElementById('add_preview').textContent = '₹' + totalAdd.toFixed(2);
+            document.getElementById('grand_preview').textContent = '₹' + grandVal.toFixed(2);
+        }
+
+        document.addEventListener('DOMContentLoaded', calcGrandTotal);
+    </script>
+</body>
+</html>
